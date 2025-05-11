@@ -1,4 +1,4 @@
-package com.example.app;
+package SlideMark;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

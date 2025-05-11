@@ -1,4 +1,4 @@
-package com.example.app;
+package SlideMark;
 
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;

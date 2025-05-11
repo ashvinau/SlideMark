@@ -1,4 +1,4 @@
-package com.example.app;
+package SlideMark;
 
 public class SlideParser {
 }

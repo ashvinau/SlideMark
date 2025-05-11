@@ -5,6 +5,6 @@ module com.example.app {
     requires org.fxmisc.richtext;
 
 
-    opens com.example.app to javafx.fxml;
-    exports com.example.app;
+    opens SlideMark to javafx.fxml;
+    exports SlideMark;
 }

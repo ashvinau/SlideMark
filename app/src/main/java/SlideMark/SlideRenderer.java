@@ -1,4 +1,4 @@
-package com.example.app;
+package SlideMark;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
