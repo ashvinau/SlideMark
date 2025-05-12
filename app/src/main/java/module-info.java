@@ -1,4 +1,4 @@
-module com.example.app {
+module SlideMark {
     requires javafx.controls;
     requires javafx.fxml;
     requires org.fxmisc.flowless;
