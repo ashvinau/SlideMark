@@ -1,6 +1,7 @@
 package SlideMark;
 
 import SlideMark.ControllerInterface;
+import SlideMark.MenuBarSet;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,37 +18,63 @@ import org.fxmisc.richtext.CodeArea;
 
 import static javafx.application.Application.launch;
 
-public abstract class GUI implements ControllerInterface {
+public class GUI implements ControllerInterface {
     ControllerInterface c;
 
     private final BorderPane parent = new BorderPane();
-    private Scene content = new Scene(parent);
-    private MenuBar menuBar = new MenuBar();
-
+    private static String content;
+    private MenuBar menuBar = MenuBarSet.createMenuBar();
     private VBox editorPane = new VBox();
     private VBox slidesPane = new VBox();
 
+    private static ReturnObject<?> editorData;
+    private ReturnObject<?> rendererData;
+
     private static boolean editingLocked = false;
+
 
     public GUI(ControllerInterface c) {
         this.c = c;
     }
 
+    @Override
+    public ReturnObject<?> request(ControllerInterface sender, String message) {
+        //if (message.equals("CREATE_MENUBAR")) {
+        //    menuBarData = c.request(this, "GET_MENU_BAR");
+        //    menuBar = (MenuBar) menuBarData.getValue();
+        if (message.equals("CREATE_EDITOR")) {
+            editorData = c.request(this, "GET_SLIDE_EDITOR");
+            this.editorPane = (VBox) editorData.getValue();        }
+        else if(message.equals("CREATE_RENDERER")){
+            rendererData = c.request(this, "GET_SLIDE_RENDERER");
+            this.slidesPane = (VBox) rendererData.getValue();
+        }
+        return null;
+
+    }
+
     public void renderUI() {
+        editorData = c.request(this, "GET_SLIDE_EDITOR");
+        this.editorPane = (VBox) editorData.getValue();
 
-        ReturnObject<?> menuBarReturn = c.request(this, "GET_MENU_BAR");
-        this.menuBar = (MenuBar) menuBarReturn.getValue();
-
-        ReturnObject<?> editorReturn = c.request(this, "GET_SLIDE_EDITOR");
-        this.editorPane = (VBox) editorReturn.getValue();
-
-        ReturnObject<?> rendererReturn = c.request(this, "GET_SLIDE_RENDERER");
-        this.slidesPane = (VBox) rendererReturn.getValue();
+        rendererData = c.request(this, "GET_SLIDE_RENDERER");
+        this.slidesPane = (VBox) rendererData.getValue();
         HBox toolbar = createToolBar();
 
         Stage mainStage = new Stage();
         setStages(mainStage, this.menuBar, this.editorPane, this.slidesPane, toolbar);
+
+
     }
+
+    public static String getCAText() {
+        CodeArea data = (CodeArea) editorData.getValue();
+        content = data.getText();
+        return content;
+    }
+
+
+
     public boolean setStages(Stage mainStage, MenuBar menu, VBox editorPane, VBox slidesPane, HBox toolbar) {
         if (mainStage == null|| menu == null || editorPane == null || slidesPane == null || toolbar == null) {
             return false;
@@ -86,49 +113,6 @@ public abstract class GUI implements ControllerInterface {
     }
 
 
-//    public void menuEvent() {
-//        c.request(this, "MENU_SELECTED");
-//    }
-    // I don't think we need this as the menu bar will already be called and will handle majority of functionality?
-
-    public void editorEvent() {
-        c.request(this, "EDITOR_UPDATED");
-    }
-
-    public void darkEvent() {
-        c.request(this, "DARK_MODE_ON");
-    }
-
-    public boolean setScene() {
-        if (content != null) {
-            this.content = new Scene(parent);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean setScene(Scene content) {
-        if (content != null) {
-            this.content = content;
-            return true;
-        }
-        return false;
-    }
-
-
-//    public void setMenu(MenuBar menu) {
-//        if (menu != null) {
-//            this.menuBar = menu;
-//        }
-//    }
-    //Once again we're calling menubar in RenderUI do we need to set the menu?
-
-    public void setEditorPane(VBox editor) {
-        if (editor != null) {
-            parent.setLeft(editor);
-        }
-    }
-
     // Create a toolbar with filename field and lock toggle
     public static HBox createToolBar() {
         HBox fileToolbar = new HBox();
@@ -155,5 +139,12 @@ public abstract class GUI implements ControllerInterface {
         editingLocked = !editingLocked;
         button.setText(editingLocked ? "Unlock Editing" : "Lock Editing");
         System.out.println("Editing Tools " + (editingLocked ? "Disabled" : "Enabled"));
+    }
+
+    public class JavaFXInitializer extends Application {
+
+        public void start(Stage stage) throws Exception {
+           launch();
+        }
     }
 }

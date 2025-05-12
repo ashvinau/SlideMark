@@ -1,6 +1,6 @@
 package SlideMark;
 
-public class SlideParser implements ControllerInterface{
+public class SlideParser implements ControllerInterface {
     /**
      * @param sender 
      * @param message

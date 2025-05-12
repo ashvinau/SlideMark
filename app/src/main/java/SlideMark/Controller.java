@@ -1,5 +1,11 @@
 package SlideMark;
 
+import javafx.scene.control.MenuBar;
+import javafx.scene.layout.VBox;
+import org.fxmisc.richtext.CodeArea;
+
+import java.awt.*;
+
 public class Controller implements ControllerInterface {
     private ControllerInterface editor;
     private ControllerInterface renderer;
@@ -68,14 +74,14 @@ public class Controller implements ControllerInterface {
 
     private ReturnObject<?> reactToGUI(ControllerInterface GUI, String message) {
         switch (message) {
-            case "GET_MENU_BAR":
-                MenuBarSet.createMenuBar();
-                break;
             case "GET_SLIDE_EDITOR":
-                SlideEditor.create();
+                GUI.request(this, "CREATE_EDITOR");
                 break;
             case "GET_SLIDE_RENDERER":
-                SlideRenderer.create();
+                GUI.request(this, "CREATE_RENDERER");
+                break;
+            case "EDITOR_UPDATED":
+                editor.request(GUI, "SET_CONTENT");
                 break;
             default:
                 return null;
@@ -123,6 +129,10 @@ public class Controller implements ControllerInterface {
             setupComplete = true;
 
         return setup;
+    }
+
+    public void setSetup(boolean value) { // Debug function
+        setupComplete = value;
     }
 
 }

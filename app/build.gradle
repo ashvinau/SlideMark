@@ -26,8 +26,8 @@ tasks.withType(JavaCompile) {
 }
 
 application {
-    mainModule = 'com.example.app'
-    mainClass = 'com.example.app.HelloApplication'
+    mainModule = 'SlideMark/SlideMark.java'
+    mainClass = 'SlideMark/SlideMark.java'
 }
 
 javafx {
