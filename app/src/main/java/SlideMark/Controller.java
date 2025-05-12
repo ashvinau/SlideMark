@@ -67,8 +67,20 @@ public class Controller implements ControllerInterface {
     }
 
     private ReturnObject<?> reactToGUI(ControllerInterface GUI, String message) {
-        System.out.println("Request recieved from GUI: " + message);
-        // logic here
+        switch (message) {
+            case "GET_MENU_BAR":
+                MenuBarSet.createMenuBar();
+                break;
+            case "GET_SLIDE_EDITOR":
+                SlideEditor.create();
+                break;
+            case "GET_SLIDE_RENDERER":
+                SlideRenderer.create();
+                break;
+            default:
+                return null;
+
+        }
         return null;
     }
 
