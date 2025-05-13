@@ -141,10 +141,4 @@ public class GUI implements ControllerInterface {
         System.out.println("Editing Tools " + (editingLocked ? "Disabled" : "Enabled"));
     }
 
-    public class JavaFXInitializer extends Application {
-
-        public void start(Stage stage) throws Exception {
-           launch();
-        }
-    }
 }
