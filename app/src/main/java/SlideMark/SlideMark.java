@@ -35,11 +35,13 @@ public class SlideMark extends Application {
     public void start(Stage primaryStage) {
         controller = new Controller();
         SlideEditor editor = new SlideEditor();
-        controller.setEditor(editor);
-        controller.setSetup(true);
-
+        SlideRenderer renderer = new SlideRenderer();
         GUI gui = new GUI(controller);
+
+        controller.setEditor(editor);
+        controller.setRenderer(renderer);
         controller.setGUI(gui);
+        controller.setSetup(true);
 
         gui.renderUI();
     }

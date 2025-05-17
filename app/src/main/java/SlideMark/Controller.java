@@ -62,7 +62,7 @@ public class Controller implements ControllerInterface {
 
     private ReturnObject<?> reactToRenderer(ControllerInterface renderer, String message) {
         System.out.println("Request recieved from renderer: " + message);
-        // logic here
+
         return null;
     }
 
@@ -75,17 +75,29 @@ public class Controller implements ControllerInterface {
     private ReturnObject<?> reactToGUI(ControllerInterface GUI, String message) {
         switch (message) {
             case "GET_SLIDE_EDITOR":
-                GUI.request(this, "CREATE_EDITOR");
-                break;
-            case "GET_SLIDE_RENDERER":
-                GUI.request(this, "CREATE_RENDERER");
-                break;
+                if (editor == null) {
+                    System.err.println("ERROR: Editor not initialized!");
+                    return null;
+                }
+                return editor.request(this, "GET_SLIDE_EDITOR");
+
             case "EDITOR_UPDATED":
-                editor.request(GUI, "SET_CONTENT");
+                ReturnObject<?> editorData = GUI.request(this, "GET_EDITOR_DATA");
+                if (editorData != null && editorData.getValue() != null) {
+                    editor.request(GUI, "SET_CONTENT");
+                }
                 break;
+
+            case "GET_SLIDE_RENDERER":
+                if (renderer != null) {
+                    return renderer.request(GUI, "GET_SLIDE_RENDERER");
+                } else {
+                    System.err.println("Renderer not initialized!");
+                    return null;
+                }
+
             default:
                 return null;
-
         }
         return null;
     }
@@ -133,6 +145,9 @@ public class Controller implements ControllerInterface {
 
     public void setSetup(boolean value) { // Debug function
         setupComplete = value;
+        if (setupComplete) {
+            checkSetup();
+        }
     }
 
 }
