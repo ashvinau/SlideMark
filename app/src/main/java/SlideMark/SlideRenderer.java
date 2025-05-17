@@ -12,7 +12,11 @@ import javafx.scene.text.TextFlow;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SlideRenderer {
+public class SlideRenderer implements ControllerInterface {
+    private ControllerInterface c;
+
+    private ReturnObject rendererData;
+
     private static List<String> slides = new ArrayList<>();
     private static int currSlideIndex = 0;
     private static VBox renderViewContain = new VBox();
@@ -74,5 +78,18 @@ public class SlideRenderer {
 
     private static void startPresentation() {
         System.out.println("Presentation Mode Activated!"); // Placeholder for actual fullscreen logic
+    }
+
+
+    public ReturnObject<?> request(ControllerInterface sender, String message) {
+        System.out.println("Controller request from " + sender.getClass().getSimpleName() + ": " + message); // DEBUGGING CHECK
+        switch (message) {
+            case "GET_SLIDE_RENDERER":
+                VBox rendererPane = create();
+                return new ReturnObject<Object>(rendererPane);
+
+            default:
+                return null;
+        }
     }
 }

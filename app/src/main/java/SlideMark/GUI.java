@@ -39,27 +39,50 @@ public class GUI implements ControllerInterface {
 
     @Override
     public ReturnObject<?> request(ControllerInterface sender, String message) {
-        //if (message.equals("CREATE_MENUBAR")) {
-        //    menuBarData = c.request(this, "GET_MENU_BAR");
-        //    menuBar = (MenuBar) menuBarData.getValue();
-        if (message.equals("CREATE_EDITOR")) {
-            editorData = c.request(this, "GET_SLIDE_EDITOR");
-            this.editorPane = (VBox) editorData.getValue();        }
-        else if(message.equals("CREATE_RENDERER")){
-            rendererData = c.request(this, "GET_SLIDE_RENDERER");
-            this.slidesPane = (VBox) rendererData.getValue();
-        }
-        return null;
+        System.out.println("Controller request from " + sender.getClass().getSimpleName() + ": " + message); // DEBUGGING CHECK
+        switch (message) {
+            case "CREATE_EDITOR":
+                editorData = c.request(this, "GET_SLIDE_EDITOR");
+                this.editorPane = (VBox) editorData.getValue();
+                return null;
 
+            case "CREATE_RENDERER":
+                rendererData = c.request(this, "GET_SLIDE_RENDERER");
+                this.slidesPane = (VBox) rendererData.getValue();
+                return null;
+
+            case "GET_EDITOR_DATA":
+                return editorData;
+
+            default:
+                return null;
+        }
     }
+
 
     public void renderUI() {
         editorData = c.request(this, "GET_SLIDE_EDITOR");
+        if (editorData == null) {
+            System.err.println("editorData is null"); //DEBUGGING CHECK
+            return;
+        }
+        if (editorData.getValue() == null) {
+            System.err.println("editorData.getValue() is null"); //DEBUGGING CHECK
+            return;
+        }
         this.editorPane = (VBox) editorData.getValue();
 
         rendererData = c.request(this, "GET_SLIDE_RENDERER");
         this.slidesPane = (VBox) rendererData.getValue();
         HBox toolbar = createToolBar();
+        if (rendererData == null) {
+            System.err.println("rendererData is null"); //DEBUGGING CHECK
+            return;
+        }
+        if (rendererData.getValue() == null) {
+            System.err.println("rendererData.getValue() is null"); //DEBUGGING CHECK
+            return;
+        }
 
         Stage mainStage = new Stage();
         setStages(mainStage, this.menuBar, this.editorPane, this.slidesPane, toolbar);
@@ -68,6 +91,11 @@ public class GUI implements ControllerInterface {
     }
 
     public static String getCAText() {
+        if (editorData == null || editorData.getValue() == null) {
+            System.err.println("ERROR: editorData or its value is null!");
+            return "";
+        }
+
         CodeArea data = (CodeArea) editorData.getValue();
         content = data.getText();
         return content;
@@ -79,8 +107,6 @@ public class GUI implements ControllerInterface {
         if (mainStage == null|| menu == null || editorPane == null || slidesPane == null || toolbar == null) {
             return false;
         }
-
-        BorderPane parent = new BorderPane();
 
         VBox topSection = new VBox(menu, toolbar);
         parent.setTop(topSection);
@@ -104,7 +130,6 @@ public class GUI implements ControllerInterface {
 
     public void setDivider(SplitPane split,double leftProportion) {
         leftProportion = Math.min(Math.max(leftProportion, 0), 1);
-        split.getItems().addAll(editorPane, slidesPane);
         split.setDividerPosition(0, leftProportion);
         split.setPrefHeight(Region.USE_COMPUTED_SIZE);
 
