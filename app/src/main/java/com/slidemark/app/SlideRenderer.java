@@ -1,4 +1,4 @@
-package SlideMark;
+package com.slidemark.app;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -8,20 +8,41 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
+import java.awt.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SlideRenderer implements ControllerInterface {
     private ControllerInterface c;
-
-    private ReturnObject rendererData;
-
-    private static List<String> slides = new ArrayList<>();
+    private static List<String> slides = new ArrayList<>(); //TODO: Change to webview later
     private static int currSlideIndex = 0;
     private static VBox renderViewContain = new VBox();
     private static TextFlow slideContent = new TextFlow();
     private static HBox slideCarousel = new HBox();
+
+    List<LayoutComponent> list;
+    String outputHTML;
+    Point size;
+
+    public SlideRenderer(){
+
+    }
+
+    public SlideRenderer(ControllerInterface c){
+        this.c = c;
+    }
+
+    public void setLayout(LayoutComponent layout){
+
+
+    }
+
+    public List<LayoutComponent> getLayouts(){
+        return this.list;
+
+    }
+
 
     static {
         // Placeholder slides

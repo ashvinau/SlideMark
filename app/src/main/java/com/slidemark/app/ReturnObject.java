@@ -1,4 +1,4 @@
-package SlideMark;
+package com.slidemark.app;
 
 import java.util.Objects;
 

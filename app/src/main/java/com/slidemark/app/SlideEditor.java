@@ -1,4 +1,4 @@
-package SlideMark;
+package com.slidemark.app;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.Priority;

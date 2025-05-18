@@ -1,7 +1,7 @@
-package SlideMark;
+package com.slidemark.app;
 
-import SlideMark.ControllerInterface;
-import SlideMark.MenuBarSet;
+import com.slidemark.app.ControllerInterface;
+import com.slidemark.app.MenuBarSet;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

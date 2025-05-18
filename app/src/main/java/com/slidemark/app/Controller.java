@@ -1,10 +1,7 @@
-package SlideMark;
+package com.slidemark.app;
 
 import javafx.scene.control.MenuBar;
 import javafx.scene.layout.VBox;
-import org.fxmisc.richtext.CodeArea;
-
-import java.awt.*;
 
 public class Controller implements ControllerInterface {
     private ControllerInterface editor;

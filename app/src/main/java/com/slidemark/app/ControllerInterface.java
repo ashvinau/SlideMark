@@ -1,4 +1,4 @@
-package SlideMark;
+package com.slidemark.app;
 
 public interface ControllerInterface {
     /**

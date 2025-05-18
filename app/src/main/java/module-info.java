@@ -1,11 +1,11 @@
-module SlideMark {
+module com.slidemark.app {
     requires javafx.controls;
     requires javafx.fxml;
-    requires org.fxmisc.flowless;
+    requires java.datatransfer;
     requires org.fxmisc.richtext;
     requires java.desktop;
 
 
-    opens SlideMark to javafx.fxml;
-    exports SlideMark;
+    opens com.slidemark.app to javafx.fxml;
+    exports com.slidemark.app;
 }
