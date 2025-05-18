@@ -37,6 +37,9 @@ public class LayoutComponent {
             this.params = newParam;
         }
     }
+    public boolean getVisible() {
+        return this.visible;
+    }
 
     public String getParams(){
         return this.params;
@@ -59,4 +62,6 @@ public class LayoutComponent {
     public String toString() {
         return "LayoutComponent- Tag: " + tag + " Params: " + params + " Content: " + content;
     }
+
+
 }

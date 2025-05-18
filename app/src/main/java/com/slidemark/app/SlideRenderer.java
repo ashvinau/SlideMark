@@ -15,29 +15,139 @@ import java.util.List;
 
 public class SlideRenderer implements ControllerInterface {
     private ControllerInterface c;
-    private static List<String> slides = new ArrayList<>(); //TODO: Change to webview later
+    private static List<String> slides = new ArrayList<>(); // TODO: Change to WebView later
     private static int currSlideIndex = 0;
     private static VBox renderViewContain = new VBox();
     private static TextFlow slideContent = new TextFlow();
     private static HBox slideCarousel = new HBox();
 
-    List<LayoutComponent> list;
-    String outputHTML;
-    Point size;
+    private List<LayoutComponent> list;
+    private String outputHTML;
+    private Point size;
 
     public SlideRenderer(ControllerInterface c){
         this.c = c;
     }
 
-    public void setLayout(LayoutComponent layout){
-
-
+    public void setLayout(List<LayoutComponent> layoutComponents) {
+        this.list = layoutComponents;
+        updateSlideView();
     }
 
     public List<LayoutComponent> getLayouts(){
         return this.list;
 
     }
+
+    public void updateSlideView() {
+        slideContent.getChildren().clear();
+
+        if (list == null || list.isEmpty()) {
+            slideContent.getChildren().add(new Text("No content to display."));
+            return;
+        }
+
+        for (LayoutComponent comp : list) {
+            if (!comp.getVisible()) continue;
+
+            String tag = comp.getTag().toLowerCase();
+            String content = comp.getContent();
+
+            Text textNode = new Text();
+
+            switch (tag) {
+                case "h1":
+                    textNode.setText(content + "\n\n");
+                    textNode.setStyle("-fx-font-size: 30; -fx-font-weight: bold;");
+                    break;
+                case "h2":
+                    textNode.setText(content + "\n\n");
+                    textNode.setStyle("-fx-font-size: 25; -fx-font-weight: bold;");
+                    break;
+                case "h3":
+                    textNode.setText(content + "\n\n");
+                    textNode.setStyle("-fx-font-size: 20; -fx-font-weight: bold;");
+                case "h4":
+                    textNode.setText(content + "\n\n");
+                    textNode.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
+                case "h5":
+                    textNode.setText(content + "\n\n");
+                    textNode.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+                case "p":
+                    textNode.setText(content + "\n\n");
+                    textNode.setStyle("-fx-font-size: 12;");
+                    break;
+                default:
+                    textNode.setText(content + "\n\n");
+                    break;
+            }
+
+            slideContent.getChildren().add(textNode);
+        }
+    }
+    public static void renderSlide() {
+        slideContent.getChildren().clear();
+
+        //TODO: LOGIC NEEDS TO BE REPLACED WITH INFORMATION WITH LAYOUTCOMPONENTS AKA THIS IS JUST A PLACEHOLDER FOR NOW.
+        VBox slideWrapper = new VBox();
+        slideWrapper.setAlignment(Pos.CENTER);
+        slideWrapper.setPrefSize(800, 400);
+        slideWrapper.setStyle("-fx-background-color: white; -fx-border-color: #888888; -fx-padding: 20;");
+
+        Text slideText;
+        if (slides.isEmpty()) {
+            slideText = new Text("No slides available.");
+        } else {
+            String currentSlideText = slides.get(currSlideIndex);
+            slideText = new Text(currentSlideText);
+        }
+
+        slideText.setStyle("-fx-font-family: 'Consolas'; -fx-font-size: 16;");
+        slideText.setTextAlignment(TextAlignment.CENTER);
+
+        slideWrapper.getChildren().add(slideText);
+        slideContent.getChildren().add(slideWrapper);
+    }
+
+    public boolean generateHTML() {
+        if (list == null) return false;
+
+        StringBuilder html = new StringBuilder("<html><body>\n");
+
+        for (LayoutComponent comp : list) {
+            if (!comp.getVisible()) continue;
+
+            html.append("<").append(comp.getTag());
+            if (!comp.getParams().isEmpty()) {
+                html.append(" ").append(comp.getParams());
+            }
+            html.append(">")
+                    .append(comp.getContent())
+                    .append("</").append(comp.getTag()).append(">\n");
+        }
+
+        html.append("</body></html>");
+        outputHTML = html.toString();
+        return true;
+    }
+
+    public String getHTML(String html) {
+        return outputHTML;
+    }
+
+    public boolean resizeRender(Point dimensions) {
+        if (dimensions == null) return false;
+
+        renderViewContain.setPrefSize(dimensions.getX(), dimensions.getY());
+        return true;
+    }
+
+    public boolean handleInput(Point location) {
+        System.out.println("Input received at: " + location);
+        return true;
+    }
+
+
 
 
     static {
@@ -57,6 +167,7 @@ public class SlideRenderer implements ControllerInterface {
         slideContent.getChildren().add(new Text("Markdown Rendering Placeholder"));
         slideContent.setStyle("-fx-font-family: 'Consolas'; -fx-font-size: 14;");
         slideContent.setTextAlignment(TextAlignment.CENTER);
+        renderSlide();
 
         StackPane slideBox = new StackPane(slideContent);
         slideBox.setStyle("-fx-background-color: white; -fx-border-color: #888888; -fx-padding: 20;");
