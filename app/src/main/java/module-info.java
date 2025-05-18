@@ -4,6 +4,7 @@ module com.slidemark.app {
     requires java.datatransfer;
     requires org.fxmisc.richtext;
     requires java.desktop;
+    requires org.fxmisc.flowless;
 
 
     opens com.slidemark.app to javafx.fxml;

@@ -12,7 +12,12 @@ public class SlideEditor implements ControllerInterface {
     private static String content;
     private static CodeArea editor;
 
-    public  String getContent(){
+    public SlideEditor(ControllerInterface newC) {
+        if (newC != null)
+            c = newC;
+    }
+
+    public String getContent(){
         if(content == null){
             return "";
         }
