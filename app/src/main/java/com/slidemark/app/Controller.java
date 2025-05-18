@@ -52,24 +52,25 @@ public class Controller implements ControllerInterface {
     }
 
     private ReturnObject<?> reactToEditor(ControllerInterface sender, String message) {
-        System.out.println("Request recieved from editor: " + message);
+        System.out.println("Controller: Request recieved from editor: " + message);
         // logic here
         return null;
     }
 
     private ReturnObject<?> reactToRenderer(ControllerInterface renderer, String message) {
-        System.out.println("Request recieved from renderer: " + message);
+        System.out.println("Controller: Request recieved from renderer: " + message);
 
         return null;
     }
 
     private ReturnObject<?> reactToParser(ControllerInterface parser, String message) {
-        System.out.println("Request recieved from parser: " + message);
+        System.out.println("Controller: Request recieved from parser: " + message);
         // logic here
         return null;
     }
 
     private ReturnObject<?> reactToGUI(ControllerInterface GUI, String message) {
+        System.out.println("Controller: Request recieved from GUI: " + message); // Just until we are sure everything works
         switch (message) {
             case "GET_SLIDE_EDITOR":
                 if (editor == null) {

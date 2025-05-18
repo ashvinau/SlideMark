@@ -25,10 +25,6 @@ public class SlideRenderer implements ControllerInterface {
     String outputHTML;
     Point size;
 
-    public SlideRenderer(){
-
-    }
-
     public SlideRenderer(ControllerInterface c){
         this.c = c;
     }
