@@ -23,6 +23,7 @@ public class SlideMark extends Application {
         controller.setEditor(editor);
         controller.setRenderer(renderer);
         controller.setGUI(gui);
+        controller.setParser(parser);
         controller.setSetup(true);
 
         gui.renderUI();

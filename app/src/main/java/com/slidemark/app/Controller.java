@@ -53,7 +53,10 @@ public class Controller implements ControllerInterface {
 
     private ReturnObject<?> reactToEditor(ControllerInterface sender, String message) {
         System.out.println("Controller: Request recieved from editor: " + message);
-        // logic here
+        switch (message) {
+            case "PROCESS_SOURCE":
+                return parser.request(sender, "PROCESS_SOURCE");
+        }
         return null;
     }
 
@@ -65,7 +68,10 @@ public class Controller implements ControllerInterface {
 
     private ReturnObject<?> reactToParser(ControllerInterface parser, String message) {
         System.out.println("Controller: Request recieved from parser: " + message);
-        // logic here
+        switch (message) {
+            case "GET_CONTENT":
+                return editor.request(this, "GET_CONTENT");
+        }
         return null;
     }
 

@@ -6,6 +6,8 @@ import javafx.scene.layout.VBox;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
 
 public class SlideEditor implements ControllerInterface {
     private ControllerInterface c;
@@ -15,6 +17,8 @@ public class SlideEditor implements ControllerInterface {
     public SlideEditor(ControllerInterface newC) {
         if (newC != null)
             c = newC;
+        content = "";
+        editor = new CodeArea();
     }
 
     public String getContent(){
@@ -33,6 +37,13 @@ public class SlideEditor implements ControllerInterface {
         return editor;
     }
 
+    private void update() {
+        System.out.println("Editor data update");
+        content = editor.getText();
+        c.request(this, "PROCESS_SOURCE");
+        // Eventually more logic so we dont repeatedly send all the source
+    }
+
     public VBox create() {
         VBox markdownView = new VBox();
         markdownView.setPrefWidth(1000);
@@ -41,7 +52,11 @@ public class SlideEditor implements ControllerInterface {
         Label markCap = new Label("Markdown View");
         markCap.setStyle("-fx-font-size: 18; -fx-font-weight: bold");
 
-        editor = new CodeArea();
+        editor.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER)
+                update();
+            }
+        );
         editor.setParagraphGraphicFactory(LineNumberFactory.get(editor));
         editor.setStyle("-fx-font-family: 'Consolas'; -fx-font-size: 14;");
 
@@ -59,15 +74,9 @@ public class SlideEditor implements ControllerInterface {
         return markdownView;
     }
 
-    /**
-     * @param sender
-     * @param message
-     * @return
-     */
     public ReturnObject<?> request(ControllerInterface sender, String message) {
-        if (message.equals("SET_CONTENT")) {
-            content = GUI.getCAText();
-            return null;
+        if (message.equals("GET_CONTENT")) {
+            return new ReturnObject<Object>(content);
         }
         else if (message.equals("GET_SLIDE_EDITOR")){
             VBox editorPane = create();

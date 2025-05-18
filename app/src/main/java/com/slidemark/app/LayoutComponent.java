@@ -55,4 +55,8 @@ public class LayoutComponent {
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
+
+    public String toString() {
+        return "LayoutComponent- Tag: " + tag + " Params: " + params + " Content: " + content;
+    }
 }
