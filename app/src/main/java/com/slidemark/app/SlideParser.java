@@ -9,7 +9,7 @@ import java.io.IOException;
 public class SlideParser implements ControllerInterface {
     private ControllerInterface c;
     private String sourceText;
-    private List<LayoutComponent> layoutObjects;
+    private List<TagComponent> layoutObjects;
 
     public SlideParser(ControllerInterface newC) {
         if (newC != null)
@@ -51,8 +51,8 @@ public class SlideParser implements ControllerInterface {
         return new String[] { firstWord, remainder };
     }
 
-    private LayoutComponent processToken(String token, String data) {
-        LayoutComponent returnComponent = new LayoutComponent();
+    private TagComponent processToken(String token, String data) {
+        TagComponent returnComponent = new TagComponent();
         System.out.println("Token: -" + token + "-");
         switch (token) {
             case "#":
@@ -79,7 +79,7 @@ public class SlideParser implements ControllerInterface {
         return returnComponent;
     }
 
-    private List<LayoutComponent> parse() {
+    private List<TagComponent> parse() {
         System.out.println("Parser: Starting parse...");
         System.out.println(sourceText);
         layoutObjects.clear();
@@ -97,10 +97,13 @@ public class SlideParser implements ControllerInterface {
 
     public ReturnObject<?> request(ControllerInterface sender, String message) {
         System.out.println("");
+        List<TagComponent> returnList = new ReturnObject<>(parse()).getValue();
         switch (message) {
             case "PROCESS_SOURCE":
                 sourceText = (String) c.request(this, "GET_CONTENT").getValue();
-                parse();
+                c.request(this, "LAYOUT_READY");
+            case "GET_LAYOUT":
+                return new ReturnObject<>(returnList);
         }
         return null; // No return data here.
     }

@@ -2,20 +2,20 @@ package com.slidemark.app;
 
 import java.util.Objects;
 
-public class LayoutComponent {
+public class TagComponent {
     private String tag;
     private String params;
     private String content;
     private boolean visible;
 
-    public LayoutComponent(){
+    public TagComponent(){
         this.tag = "";
         this.params = "";
         this.content = "";
         this.visible = true;
     }
 
-    public LayoutComponent(String tags, String params, String content){
+    public TagComponent(String tags, String params, String content){
         this.tag = Objects.requireNonNullElse(tags, "");
         this.params = Objects.requireNonNullElse(params, "");
         this.content = Objects.requireNonNullElse(content, "");
@@ -58,5 +58,9 @@ public class LayoutComponent {
 
     public String toString() {
         return "LayoutComponent- Tag: " + tag + " Params: " + params + " Content: " + content;
+    }
+
+    public boolean getVisible() {
+        return this.visible;
     }
 }

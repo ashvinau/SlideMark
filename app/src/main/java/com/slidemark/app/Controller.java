@@ -62,6 +62,10 @@ public class Controller implements ControllerInterface {
 
     private ReturnObject<?> reactToRenderer(ControllerInterface renderer, String message) {
         System.out.println("Controller: Request recieved from renderer: " + message);
+        switch (message) {
+            case "GET_LAYOUT":
+                return parser.request(this, "GET_LAYOUT");
+        }
 
         return null;
     }
@@ -71,6 +75,8 @@ public class Controller implements ControllerInterface {
         switch (message) {
             case "GET_CONTENT":
                 return editor.request(this, "GET_CONTENT");
+            case "LAYOUT_READY":
+                return renderer.request(this, "LAYOUT_READY");
         }
         return null;
     }
