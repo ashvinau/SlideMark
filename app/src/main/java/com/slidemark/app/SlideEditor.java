@@ -47,10 +47,9 @@ public class SlideEditor implements ControllerInterface {
     public VBox create() {
         VBox markdownView = new VBox();
         markdownView.setPrefWidth(1000);
-        markdownView.setStyle("-fx-background-color: #eeeeee; -fx-padding: 10;");
 
         Label markCap = new Label("Markdown View");
-        markCap.setStyle("-fx-font-size: 18; -fx-font-weight: bold");
+        markCap.setStyle("-fx-text-fill: white;");
 
         editor.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER)
@@ -58,14 +57,13 @@ public class SlideEditor implements ControllerInterface {
             }
         );
         editor.setParagraphGraphicFactory(LineNumberFactory.get(editor));
-        editor.setStyle("-fx-font-family: 'Consolas'; -fx-font-size: 14;");
 
         if (content != null) {
             editor.replaceText(content);
         } else {
             editor.replaceText("");
         }
-
+        editor.getStyleClass().add("code-area");
         VirtualizedScrollPane<CodeArea> vsPane = new VirtualizedScrollPane<>(editor);
 
         VBox.setVgrow(vsPane, Priority.ALWAYS);

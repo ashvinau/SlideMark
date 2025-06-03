@@ -16,6 +16,8 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
 
+import java.util.Objects;
+
 import static javafx.application.Application.launch;
 
 public class GUI implements ControllerInterface {
@@ -61,6 +63,7 @@ public class GUI implements ControllerInterface {
 
 
     public void renderUI() {
+
         editorData = c.request(this, "GET_SLIDE_EDITOR");
         if (editorData == null) {
             System.err.println("editorData is null"); //DEBUGGING CHECK
@@ -118,6 +121,7 @@ public class GUI implements ControllerInterface {
 
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
         Scene scene = new Scene(parent, screenBounds.getWidth(), screenBounds.getHeight());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/guistyles.css")).toExternalForm());
 
         mainStage.setTitle("SlideMark");
         mainStage.setScene(scene);
@@ -137,18 +141,16 @@ public class GUI implements ControllerInterface {
 
     }
 
-
     // Create a toolbar with filename field and lock toggle
     public static HBox createToolBar() {
         HBox fileToolbar = new HBox();
         fileToolbar.setPadding(new Insets(5, 10, 5, 10));
         fileToolbar.setSpacing(10);
-        fileToolbar.setStyle("-fx-background-color: #cccccc;");
         fileToolbar.setAlignment(Pos.CENTER_LEFT);
+        fileToolbar.getStyleClass().add("toolbar"); // <-- This line is crucial for CSS targeting
 
-        TextField fileNameField = new TextField("Untitled.md");
+        TextField fileNameField = new TextField("Untitled");
         fileNameField.setPrefWidth(300);
-        fileNameField.setStyle("-fx-font-size: 14;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
