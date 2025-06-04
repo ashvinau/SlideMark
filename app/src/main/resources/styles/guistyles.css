@@ -1,0 +1,214 @@
+.root {
+    -fx-background-color: #101010;
+    -fx-text-fill: #ffffff;
+}
+
+/*Menu Bar Styling */
+
+.menu-bar {
+    -fx-background-color: #303030;
+    -fx-padding: 0 0 5px 0;
+    -fx-text-fill: white;
+    -fx-border-color: transparent transparent #101010 transparent;
+    -fx-border-width: 0 0 4px 0;
+}
+
+.menu-bar .label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.menu-bar .menu:hover,
+.menu-bar .menu:armed {
+    -fx-background-color: #505050;
+    -fx-text-fill: white;
+}
+
+.menu {
+    -fx-background-color: #303030;
+    -fx-border-color: transparent;
+}
+
+.menu-item {
+    -fx-background-color: #303030;
+    -fx-text-fill: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.menu-item .label {
+    -fx-text-fill: white;
+}
+
+
+.menu-item:hover,
+.menu-item:focused {
+    -fx-background-color: #505050;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-effect: none;
+}
+
+.menu-item:focused .label {
+    -fx-text-fill: white;
+}
+
+
+.menu-popup {
+    -fx-background-color: #303030;
+    -fx-border-color: transparent;
+    -fx-effect: none;
+}
+
+.context-menu {
+    -fx-background-color: #303030;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+    -fx-effect: none;
+}
+
+/*Toolbar Styling */
+
+.toolbar .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 24px;
+
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+
+    -fx-prompt-text-fill: derive(-fx-control-inner-background, -30%);
+    -fx-highlight-fill: transparent;
+    -fx-highlight-text-fill: inherit;
+
+    -fx-text-box-border: transparent;
+    -fx-control-inner-background: transparent;
+}
+
+.toolbar .text-field:focused {
+    -fx-border-color: #ffffff44;
+}
+
+.toolbar{
+    -fx-border-color: transparent transparent #101010 transparent;
+    -fx-border-width: 0 0 6px 0;
+}
+
+.label {
+    -fx-font-size: 20px;
+    -fx-text-fill: white;
+}
+
+/*Editor Styling */
+.code-area {
+    -fx-background-color: #1f1f1f;
+    -fx-font-family: Consolas;
+    -fx-font-size: 14px;
+}
+.code-area .lineno {
+    -fx-background-color: transparent;
+    -fx-padding: 0 5px 0 5px;
+    -fx-text-fill: #888888;
+    -fx-font-size: 12px;
+}
+
+.code-area .text {
+    -fx-fill: white;
+}
+
+.code-area .caret {
+    -fx-stroke: white;
+    -fx-background-color: #1f1f1f;
+}
+
+
+TextField, .text-field {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: white;
+    -fx-border-color: #444;
+}
+
+Button, .button, ToggleButton {
+    -fx-background-color: #333333;
+    -fx-text-fill: white;
+    -fx-border-color: #555;
+}
+
+VBox, HBox, SplitPane {
+    -fx-background-color: #333333;
+}
+
+.split-pane-divider {
+    -fx-background-color: #0a0a0a;
+}
+
+/* RENDERER CSS */
+
+.render-view-contain {
+    -fx-background-color: #303030;
+    -fx-padding: 10;
+}
+
+.render-cap {
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+}
+
+.slide-template {
+    -fx-background-color: white;
+    -fx-border-color: #303030;
+    -fx-padding: 20;
+    -fx-alignment: center;
+}
+.slide-content {
+    -fx-alignment: center;
+}
+
+.placeholder-text {
+    -fx-font-family: 'Consolas';
+    -fx-font-size: 14;
+    -fx-text-alignment: center;
+}
+
+.slide-box {
+    -fx-background-color:#303030;
+    -fx-border-color: #303030;
+    -fx-padding: Center;
+}
+
+.slide-carousel {
+    -fx-background-color: #303030;
+}
+
+.carousel-scroll {
+    -fx-background-color: transparent;
+}
+
+.present-button {
+    -fx-font-size: 14;
+    -fx-padding: 10;
+}
+
+.button-box {
+    -fx-padding: 10;
+}
+
+.carousel-scroll {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+}
+
+.carousel-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.carousel-scroll .scroll-bar:horizontal,
+.carousel-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}

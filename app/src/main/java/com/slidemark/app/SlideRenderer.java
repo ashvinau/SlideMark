@@ -166,57 +166,63 @@ public class SlideRenderer implements ControllerInterface {
     }
 
     public VBox create() {
-
         renderViewContain.setPrefWidth(1000);
-        renderViewContain.setStyle("-fx-background-color: #eeeeee; -fx-padding: 10;");
+        renderViewContain.getStyleClass().add("render-view-contain");
         renderViewContain.setAlignment(Pos.TOP_CENTER);
 
         Label renderCap = new Label("Slide View");
-        renderCap.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
-
-
+        renderCap.getStyleClass().add("render-cap");
 
         slideContent.getChildren().clear();
-
+        slideContent.setTextAlignment(TextAlignment.CENTER);
+        slideContent.setPrefHeight(380);
+        slideContent.setMaxHeight(380);
+        slideContent.setMinHeight(380);
 
         VBox slideTemplate = new VBox(10);
         slideTemplate.setPrefSize(780, 380);
-        slideTemplate.setStyle("-fx-background-color: white; -fx-border-color: #444444; -fx-padding: 20;");
-
-        Text placeholder = new Text("No content to display.");
-        placeholder.setStyle("-fx-font-family: 'Consolas'; -fx-font-size: 14;");
-        placeholder.setTextAlignment(TextAlignment.CENTER);
-        slideTemplate.getChildren().add(placeholder);
-
+        slideTemplate.setMaxWidth(Region.USE_PREF_SIZE);
+        slideTemplate.getStyleClass().add("slide-template");
+        slideTemplate.setAlignment(Pos.CENTER);
 
         slideContent.getChildren().add(slideTemplate);
 
+        StackPane slideContentWrapper = new StackPane(slideContent);
+        slideContentWrapper.setAlignment(Pos.CENTER);
+        slideContentWrapper.getStyleClass().add("slide-content");
+        slideContentWrapper.setPrefSize(780, 380);
 
-        StackPane slideBox = new StackPane(slideContent);
-        slideBox.setStyle("-fx-background-color: white; -fx-border-color: #888888; -fx-padding: 10;");
+        slideContentWrapper.setClip(new javafx.scene.shape.Rectangle(780, 380));
+
+        StackPane slideBox = new StackPane(slideContentWrapper);
+        slideBox.getStyleClass().add("slide-box");
         slideBox.setPrefSize(800, 400);
 
-
-        slideCarousel.setStyle("-fx-background-color: #888888; -fx-padding: 5;");
+        slideCarousel.getStyleClass().add("slide-carousel");
         slideCarousel.setSpacing(10);
         populateCarousel();
 
         ScrollPane carouselScroll = new ScrollPane(slideCarousel);
         carouselScroll.setFitToWidth(true);
-        carouselScroll.setStyle("-fx-background-color: transparent;");
-        carouselScroll.setPrefHeight(100);  // Give a fixed height so it doesn't collapse
+        carouselScroll.setPrefHeight(100);
+        carouselScroll.getStyleClass().add("carousel-scroll");
 
         Button presentButton = new Button("Presentation Mode");
-        presentButton.setStyle("-fx-font-size: 14; -fx-padding: 10;");
+        presentButton.getStyleClass().add("present-button");
         presentButton.setOnAction(e -> startPresentation());
 
         HBox buttonBox = new HBox(presentButton);
         buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
-        buttonBox.setStyle("-fx-padding: 10;");
+        buttonBox.getStyleClass().add("button-box");
 
+        VBox mainContent = new VBox(10);
+        mainContent.setAlignment(Pos.TOP_CENTER);
+        mainContent.getChildren().addAll(slideBox, carouselScroll);
 
         renderViewContain.getChildren().clear();
-        renderViewContain.getChildren().addAll(renderCap, slideBox, carouselScroll, buttonBox);
+        renderViewContain.getChildren().addAll(renderCap, mainContent, buttonBox);
+
+        updateSlideView();
 
         return renderViewContain;
     }
