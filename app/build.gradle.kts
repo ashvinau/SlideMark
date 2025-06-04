@@ -33,12 +33,13 @@ application {
 javafx {
 
     version = "17.0.6"
-    modules = listOf("javafx.controls", "javafx.fxml")
+    modules = listOf("javafx.controls", "javafx.fxml","javafx.web")
 }
 
 dependencies {
     implementation("org.fxmisc.richtext:richtextfx:0.10.9")
     implementation("org.fxmisc.flowless:flowless:0.6.5")
+    implementation("org.openjfx:javafx-web:17")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")

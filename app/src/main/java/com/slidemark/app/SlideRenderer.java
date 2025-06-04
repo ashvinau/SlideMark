@@ -7,7 +7,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+
 import java.awt.*;
 
 import java.util.ArrayList;
@@ -15,10 +17,11 @@ import java.util.List;
 
 public class SlideRenderer implements ControllerInterface {
     private ControllerInterface c;
-    private static List<String> slides = new ArrayList<>(); // TODO: Change to WebView later
+    private static List<WebView> slides = new ArrayList<>();
     private static int currSlideIndex = 0;
     private static VBox renderViewContain = new VBox();
-    private static TextFlow slideContent = new TextFlow();
+    private static WebView slideContent = new WebView();
+    private static WebEngine engine = slideContent.getEngine();
     private static HBox slideCarousel = new HBox();
 
     private List<TagComponent> list;
@@ -40,64 +43,32 @@ public class SlideRenderer implements ControllerInterface {
     }
 
     public void updateSlideView() {
-        if (slideContent.getChildren().isEmpty()) {
-            // If for some reason slideTemplate missing, just return or handle error
-            return;
-        }
-
-        VBox slideTemplate = (VBox) slideContent.getChildren().get(0);
-        slideTemplate.getChildren().clear();
-
         if (list == null || list.isEmpty()) {
-            slideTemplate.getChildren().add(new Text("No content to display."));
+            engine.loadContent("<html><body><h2>No content to display.</h2></body></html>");
             return;
         }
+
+        StringBuilder html = new StringBuilder("<html><body style='font-family:sans-serif;'>");
 
         for (TagComponent comp : list) {
             if (!comp.getVisible()) continue;
 
-            String tag = comp.getTag().toLowerCase();
-            String content = comp.getContent();
-
-            Text textNode = new Text();
-
-            switch (tag) {
-                case "h1":
-                    textNode.setText(content + "\n\n");
-                    textNode.setStyle("-fx-font-size: 30; -fx-font-weight: bold;");
-                    break;
-                case "h2":
-                    textNode.setText(content + "\n\n");
-                    textNode.setStyle("-fx-font-size: 25; -fx-font-weight: bold;");
-                    break;
-                case "h3":
-                    textNode.setText(content + "\n\n");
-                    textNode.setStyle("-fx-font-size: 20; -fx-font-weight: bold;");
-                    break;
-                case "h4":
-                    textNode.setText(content + "\n\n");
-                    textNode.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
-                    break;
-                case "h5":
-                    textNode.setText(content + "\n\n");
-                    textNode.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
-                    break;
-                case "p":
-                    textNode.setText(content + "\n\n");
-                    textNode.setStyle("-fx-font-size: 12;");
-                    break;
-                default:
-                    textNode.setText(content + "\n\n");
-                    break;
+            html.append("<").append(comp.getTag());
+            if (!comp.getParams().isEmpty()) {
+                html.append(" ").append(comp.getParams());
             }
-
-            slideTemplate.getChildren().add(textNode);
+            html.append(">")
+                    .append(comp.getContent())
+                    .append("</").append(comp.getTag()).append(">");
         }
+
+        html.append("</body></html>");
+        engine.loadContent(html.toString());
     }
 
 
     public static void renderSlide() {
-        slideContent.getChildren().clear();
+        slideContent.getChildrenUnmodifiable().clear();
 
         VBox slideWrapper = new VBox();
         slideWrapper.setAlignment(Pos.CENTER);
@@ -108,7 +79,7 @@ public class SlideRenderer implements ControllerInterface {
         if (slides.isEmpty()) {
             slideText = new Text("No slides available.");
         } else {
-            String currentSlideText = slides.get(currSlideIndex);
+            String currentSlideText = String.valueOf(slides.get(currSlideIndex));
             slideText = new Text(currentSlideText);
         }
 
@@ -116,7 +87,7 @@ public class SlideRenderer implements ControllerInterface {
         slideText.setTextAlignment(TextAlignment.CENTER);
 
         slideWrapper.getChildren().add(slideText);
-        slideContent.getChildren().add(slideWrapper);
+        slideContent.getChildrenUnmodifiable().add(slideWrapper);
     }
 
     public boolean generateHTML() {
@@ -157,14 +128,6 @@ public class SlideRenderer implements ControllerInterface {
         return true;
     }
 
-
-    static {
-        // Placeholder slides
-        slides.add("# Slide 1\nThis is the first slide.");
-        slides.add("# Slide 2\nAnother slide example.");
-        slides.add("# Slide 3\nMarkdown will be rendered here.");
-    }
-
     public VBox create() {
         renderViewContain.setPrefWidth(1000);
         renderViewContain.getStyleClass().add("render-view-contain");
@@ -173,31 +136,24 @@ public class SlideRenderer implements ControllerInterface {
         Label renderCap = new Label("Slide View");
         renderCap.getStyleClass().add("render-cap");
 
-        slideContent.getChildren().clear();
-        slideContent.setTextAlignment(TextAlignment.CENTER);
-        slideContent.setPrefHeight(380);
-        slideContent.setMaxHeight(380);
-        slideContent.setMinHeight(380);
-
-        VBox slideTemplate = new VBox(10);
-        slideTemplate.setPrefSize(780, 380);
-        slideTemplate.setMaxWidth(Region.USE_PREF_SIZE);
-        slideTemplate.getStyleClass().add("slide-template");
-        slideTemplate.setAlignment(Pos.CENTER);
-
-        slideContent.getChildren().add(slideTemplate);
+        slideContent.setPrefSize(780, 380);
+        slideContent.setMaxSize(780, 380);
+        slideContent.setContextMenuEnabled(false);
+        slideContent.getStyleClass().add("slide-webview");
 
         StackPane slideContentWrapper = new StackPane(slideContent);
         slideContentWrapper.setAlignment(Pos.CENTER);
         slideContentWrapper.getStyleClass().add("slide-content");
         slideContentWrapper.setPrefSize(780, 380);
 
+        // Optional: clip content to bounds
         slideContentWrapper.setClip(new javafx.scene.shape.Rectangle(780, 380));
 
         StackPane slideBox = new StackPane(slideContentWrapper);
         slideBox.getStyleClass().add("slide-box");
         slideBox.setPrefSize(800, 400);
 
+        // Carousel section
         slideCarousel.getStyleClass().add("slide-carousel");
         slideCarousel.setSpacing(10);
         populateCarousel();
@@ -222,10 +178,13 @@ public class SlideRenderer implements ControllerInterface {
         renderViewContain.getChildren().clear();
         renderViewContain.getChildren().addAll(renderCap, mainContent, buttonBox);
 
+
         updateSlideView();
 
         return renderViewContain;
     }
+
+
 
 
 

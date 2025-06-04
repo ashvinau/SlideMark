@@ -5,6 +5,7 @@ module com.slidemark.app {
     requires org.fxmisc.richtext;
     requires java.desktop;
     requires org.fxmisc.flowless;
+    requires javafx.web;
 
 
     opens com.slidemark.app to javafx.fxml;
