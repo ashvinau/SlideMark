@@ -31,8 +31,5 @@ public class SlideMark extends Application {
         controller.setSetup(true);
 
         gui.renderUI();
-        // Testing messages
-        editor.request(null,"LOAD_FILE");
-        editor.request(null, "SAVE_AS");
     }
 }

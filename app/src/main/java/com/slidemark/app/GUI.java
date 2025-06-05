@@ -33,6 +33,7 @@ public class GUI implements ControllerInterface {
     private ReturnObject<?> rendererData;
 
     private static boolean editingLocked = false;
+    TextField fileNameField = new TextField();
 
 
     public GUI(ControllerInterface c) {
@@ -60,6 +61,7 @@ public class GUI implements ControllerInterface {
                 return null;
         }
     }
+
 
 
     public void renderUI() {
@@ -122,7 +124,7 @@ public class GUI implements ControllerInterface {
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
         Scene scene = new Scene(parent, screenBounds.getWidth(), screenBounds.getHeight());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/guistyles.css")).toExternalForm());
-
+        MenuBarSet.setController(c, this, fileNameField);
         mainStage.setTitle("SlideMark");
         mainStage.setScene(scene);
         mainStage.setX(screenBounds.getMinX());
@@ -142,14 +144,14 @@ public class GUI implements ControllerInterface {
     }
 
     // Create a toolbar with filename field and lock toggle
-    public static HBox createToolBar() {
+    public HBox createToolBar() {
         HBox fileToolbar = new HBox();
         fileToolbar.setPadding(new Insets(5, 10, 5, 10));
         fileToolbar.setSpacing(10);
         fileToolbar.setAlignment(Pos.CENTER_LEFT);
         fileToolbar.getStyleClass().add("toolbar"); // <-- This line is crucial for CSS targeting
-
-        TextField fileNameField = new TextField("Untitled");
+        String fileName = "Untitled";
+        fileNameField = new TextField(fileName);
         fileNameField.setPrefWidth(300);
 
         Region spacer = new Region();
