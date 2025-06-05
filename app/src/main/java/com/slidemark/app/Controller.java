@@ -81,6 +81,8 @@ public class Controller implements ControllerInterface {
         return null;
     }
 
+
+
     private ReturnObject<?> reactToGUI(ControllerInterface GUI, String message) {
         System.out.println("Controller: Request recieved from GUI: " + message); // Just until we are sure everything works
         switch (message) {
@@ -105,7 +107,17 @@ public class Controller implements ControllerInterface {
                     System.err.println("Renderer not initialized!");
                     return null;
                 }
-
+            case "LOAD_FILE":
+                editor.request(this, "LOAD_FILE");
+                break;
+            case "SAVE_FILE":
+                editor.request(this, "SAVE_FILE");
+                break;
+            case "SAVE_AS":
+                editor.request(this, "SAVE_AS");
+                break;
+            case "GET_FILENAME":
+                return editor.request(this, "GET_FILENAME");
             default:
                 return null;
         }

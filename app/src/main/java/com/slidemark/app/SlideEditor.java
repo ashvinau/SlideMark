@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
+
 
 public class SlideEditor implements ControllerInterface {
     private ControllerInterface c;
@@ -25,7 +25,6 @@ public class SlideEditor implements ControllerInterface {
             c = newC;
         content = "";
         editor = new CodeArea();
-        //loadFile(); // for testing
     }
 
     private String getContent(){
@@ -113,7 +112,7 @@ public class SlideEditor implements ControllerInterface {
      *
      * @return true on successful write; false if the user cancels “Save As” or I/O fails.
      */
-    public boolean saveFile() {
+    private boolean saveFile() {
         update();
 
         if (currentFile == null) { // No existing file—fall back to Save As
@@ -130,7 +129,7 @@ public class SlideEditor implements ControllerInterface {
      *
      * @return true on successful save; false if user cancels or I/O fails.
      */
-    public boolean saveAs() {
+    private boolean saveAs() {
         update();
 
         FileChooser chooser = new FileChooser();
@@ -144,6 +143,11 @@ public class SlideEditor implements ControllerInterface {
         return writeCurrentFile();
     }
 
+    private String getCurFilename() {
+        return currentFile.getName();
+    }
+
+
     public ReturnObject<?> request(ControllerInterface sender, String message) {
         switch (message) {
             case "GET_CONTENT":
@@ -153,13 +157,19 @@ public class SlideEditor implements ControllerInterface {
                 return new ReturnObject<Object>(editorPane);
             case "LOAD_FILE":
                 loadFile();
+                break;
             case "SAVE_FILE":
                 saveFile();
+                break;
             case "SAVE_AS":
                 saveAs();
+                break;
+            case "GET_FILENAME":
+                return new ReturnObject<Object>(getCurFilename());
             default:
                 return null;
         }
+        return null;
     }
 
 }

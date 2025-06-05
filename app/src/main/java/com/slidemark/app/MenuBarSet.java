@@ -3,10 +3,21 @@ package com.slidemark.app;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 
 public class MenuBarSet {
+    static ControllerInterface c = new Controller();
+    static GUI guiRef = new GUI(c);
+    static TextField nameField = new TextField("Untitled");
+
     public static MenuBar createMenuBar() {
         MenuBar menu = new MenuBar();
+
+
+        MenuItem openCmd;
+        MenuItem saveCmd;
+        MenuItem saveAsCmd;
+
 
         Menu fileMenu = new Menu("File");
         Menu editMenu = new Menu("Edit");
@@ -16,9 +27,10 @@ public class MenuBarSet {
 
         fileMenu.getItems().addAll(
                 new MenuItem("New Presentation"),
-                new MenuItem("Open"),
-                new MenuItem("Save"),
-                new MenuItem("Save as.."),
+                openCmd = new MenuItem("Open"),
+
+                saveCmd = new MenuItem("Save"),
+                saveAsCmd = new MenuItem("Save as.."),
                 new MenuItem("Export as PDF"),
                 new MenuItem("System Preferences"),
                 new MenuItem("Close")
@@ -53,6 +65,35 @@ public class MenuBarSet {
         );
 
         menu.getMenus().addAll(fileMenu, editMenu, viewMenu, insertMenu, helpMenu);
+
+        openCmd.setOnAction(event -> {
+            c.request(guiRef,"LOAD_FILE");
+            String newName = (String) c.request(guiRef, "GET_FILENAME").getValue();
+            nameField.setText(newName);
+        });
+
+        saveCmd.setOnAction(event -> {
+            c.request(guiRef,"SAVE_FILE");
+        });
+
+        saveAsCmd.setOnAction(event -> {
+            c.request(guiRef,"SAVE_AS");
+            String newName = (String) c.request(guiRef, "GET_FILENAME").getValue();
+            nameField.setText(newName);
+        });
+
         return menu;
     }
+
+    public static boolean setController(ControllerInterface newC, ControllerInterface newRef, TextField filenameField) {
+        c = newC;
+        guiRef = (GUI) newRef;
+        nameField = filenameField;
+        return true;
+    }
+
+
+
+
+
 }
