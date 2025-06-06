@@ -27,27 +27,15 @@ public class SlideEditor implements ControllerInterface {
         editor = new CodeArea();
     }
 
-    private String getContent(){
-        if(content == null){
-            return "";
-        }
-       return content;
-    }
-
     private static void setContent(String newContent) {
         if (newContent != null)
             content = newContent;
-    }
-
-    private CodeArea getEditor() {
-        return editor;
     }
 
     private void update() {
         System.out.println("Editor data update");
         content = editor.getText();
         c.request(this, "PROCESS_SOURCE");
-        // Eventually more logic so we dont repeatedly send all the source
     }
 
     protected VBox create() {
@@ -62,6 +50,7 @@ public class SlideEditor implements ControllerInterface {
                 update();
             }
         );
+        editor.setWrapText(true);
         editor.setParagraphGraphicFactory(LineNumberFactory.get(editor));
 
         if (content != null) {
