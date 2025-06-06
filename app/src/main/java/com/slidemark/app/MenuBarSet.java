@@ -68,24 +68,27 @@ public class MenuBarSet {
 
         openCmd.setOnAction(event -> {
             c.request(guiRef,"LOAD_FILE");
-            String newName = (String) c.request(guiRef, "GET_FILENAME").getValue();
-            nameField.setText(newName);
+            nameField.setText(retrieveFilename());
         });
 
         saveCmd.setOnAction(event -> {
             c.request(guiRef,"SAVE_FILE");
+            nameField.setText(retrieveFilename());
         });
 
         saveAsCmd.setOnAction(event -> {
             c.request(guiRef,"SAVE_AS");
-            String newName = (String) c.request(guiRef, "GET_FILENAME").getValue();
-            nameField.setText(newName);
+            nameField.setText(retrieveFilename());
         });
 
         return menu;
     }
 
-    public static boolean setController(ControllerInterface newC, ControllerInterface newRef, TextField filenameField) {
+    protected static String retrieveFilename() {
+        return (String) c.request(guiRef, "GET_FILENAME").getValue();
+    }
+
+    public static boolean setRefs(ControllerInterface newC, ControllerInterface newRef, TextField filenameField) {
         c = newC;
         guiRef = (GUI) newRef;
         nameField = filenameField;

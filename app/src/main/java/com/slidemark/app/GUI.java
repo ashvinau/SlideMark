@@ -1,8 +1,5 @@
 package com.slidemark.app;
 
-import com.slidemark.app.ControllerInterface;
-import com.slidemark.app.MenuBarSet;
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -14,7 +11,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.*;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import org.fxmisc.richtext.CodeArea;
 
 import java.util.Objects;
 
@@ -64,7 +60,7 @@ public class GUI implements ControllerInterface {
 
 
 
-    public void renderUI() {
+   protected void renderUI() {
 
         editorData = c.request(this, "GET_SLIDE_EDITOR");
         if (editorData == null) {
@@ -95,20 +91,7 @@ public class GUI implements ControllerInterface {
 
     }
 
-    public static String getCAText() {
-        if (editorData == null || editorData.getValue() == null) {
-            System.err.println("ERROR: editorData or its value is null!");
-            return "";
-        }
-
-        CodeArea data = (CodeArea) editorData.getValue();
-        content = data.getText();
-        return content;
-    }
-
-
-
-    public boolean setStages(Stage mainStage, MenuBar menu, VBox editorPane, VBox slidesPane, HBox toolbar) {
+    private boolean setStages(Stage mainStage, MenuBar menu, VBox editorPane, VBox slidesPane, HBox toolbar) {
         if (mainStage == null|| menu == null || editorPane == null || slidesPane == null || toolbar == null) {
             return false;
         }
@@ -124,7 +107,7 @@ public class GUI implements ControllerInterface {
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
         Scene scene = new Scene(parent, screenBounds.getWidth(), screenBounds.getHeight());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/guistyles.css")).toExternalForm());
-        MenuBarSet.setController(c, this, fileNameField);
+        MenuBarSet.setRefs(c, this, fileNameField);
         mainStage.setTitle("SlideMark");
         mainStage.setScene(scene);
         mainStage.setX(screenBounds.getMinX());
@@ -134,7 +117,7 @@ public class GUI implements ControllerInterface {
         return true;
     }
 
-    public void setDivider(SplitPane split,double leftProportion) {
+    private void setDivider(SplitPane split,double leftProportion) {
         leftProportion = Math.min(Math.max(leftProportion, 0), 1);
         split.setDividerPosition(0, leftProportion);
         split.setPrefHeight(Region.USE_COMPUTED_SIZE);

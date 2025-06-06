@@ -55,7 +55,7 @@ public class Controller implements ControllerInterface {
         System.out.println("Controller: Request recieved from editor: " + message);
         switch (message) {
             case "PROCESS_SOURCE":
-                return parser.request(sender, "PROCESS_SOURCE");
+                return parser.request(this, "PROCESS_SOURCE");
         }
         return null;
     }
@@ -102,7 +102,7 @@ public class Controller implements ControllerInterface {
 
             case "GET_SLIDE_RENDERER":
                 if (renderer != null) {
-                    return renderer.request(GUI, "GET_SLIDE_RENDERER");
+                    return renderer.request(this, "GET_SLIDE_RENDERER");
                 } else {
                     System.err.println("Renderer not initialized!");
                     return null;
