@@ -11,7 +11,6 @@ public class SlideParser implements ControllerInterface {
     private ControllerInterface c;
     private String sourceText;
     private List<TagComponent> tagObjects;
-    private int tagsOpen;
     private HashMap<String, String> subTagMap;
 
     public SlideParser(ControllerInterface newC) {
@@ -20,15 +19,6 @@ public class SlideParser implements ControllerInterface {
         sourceText = "";
         tagObjects = new ArrayList<>();
         subTagMap = new HashMap<>();
-        initSubTags();
-    }
-
-    private void initSubTags() {
-        tagsOpen = 0;
-        subTagMap.put("**", "b"); // Bold
-        subTagMap.put("__", "b");
-        subTagMap.put("*", "i"); // Italics
-        subTagMap.put("_", "i");
     }
 
     /**
