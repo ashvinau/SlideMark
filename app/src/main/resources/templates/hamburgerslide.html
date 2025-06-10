@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Title and Content Slide</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .slide {
+      border: 2px solid black; /* TODO: REMOVE when importing to JavaFX */
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .column-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 20px;
+      gap: 20px;
+    }
+
+
+    .column {
+      width: 100%;
+      flex: 1;
+      border: 2px solid black;
+      padding: 20px;
+      box-sizing: border-box;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .middle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex: 2;
+      gap: 40px;
+      box-sizing: border-box;
+    }
+
+    .box {
+      flex: 1;
+      border: 2px solid black;
+      padding: 20px;
+      box-sizing: border-box;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+
+    .column p,
+    .box p {
+      font-size: 16px;
+      margin: 0;
+    }
+
+  </style>
+</head>
+<body class="slide">
+  <div class="column-container">
+
+    <div class="column">
+      <p>{{Content1}}</p>
+    </div>
+
+    <div class="middle-row">
+
+      <div class="box">
+        <p>{{Content2}}</p>
+      </div>
+
+      <div class="box">
+        <p>{{Content3}}</p>
+      </div>
+
+    </div>
+
+    <div class="column">
+      <p>{{Content4}}</p>
+    </div>
+
+  </div>
+</body>
+</html>
