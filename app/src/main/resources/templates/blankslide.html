@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Blank Slide</title>
+  <style>
+      html, body {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          box-sizing: border-box;
+      }
+      .slide {
+          width: 100%;
+          height: 100%;
+          border: 2px solid black; /*TODO: GET RID OF THIS WHEN IMPORTING TO JAVAFX */
+
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+
+      }
+
+    .content {
+        width: 90%;
+        height: 30%;
+        padding: 40px, 20px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+      p {
+        display: inline; /* or inline-block if you want */
+        margin-right: 4px; /* adds visible space between paragraphs */
+      }
+
+  </style>
+</head>
+<body class = "slide">
+  <div class = "content">
+        {{Content1}}
+        <!-- The renderer will fill this with HTML inserts with markdown rendering for customization.-->
+  </div>
+</body>
+</html>

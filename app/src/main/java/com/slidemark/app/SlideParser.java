@@ -6,19 +6,21 @@ import java.util.List;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.io.IOException;
+import java.util.Objects;
 
 public class SlideParser implements ControllerInterface {
     private ControllerInterface c;
     private String sourceText;
     private List<TagComponent> tagObjects;
-    private HashMap<String, String> subTagMap;
+    private boolean cfOpen = false;
+    int curSlide;
 
     public SlideParser(ControllerInterface newC) {
         if (newC != null)
             c = newC;
         sourceText = "";
         tagObjects = new ArrayList<>();
-        subTagMap = new HashMap<>();
+
     }
 
     /**
@@ -43,14 +45,30 @@ public class SlideParser implements ControllerInterface {
         // Find the first whitespace
         int splitPos = trimmed.indexOf(' ');
 
-        if (splitPos < 0) { // Entire string is a single word, assuming no token
-            firstWord = "";
-            remainder = trimmed;
+        if (splitPos < 0) { // Entire string is a single word, token with no content, or paragraph
+            switch (trimmed) {
+                case "->":
+                    firstWord = "->";
+                    remainder = "";
+                    break;
+                case "```":
+                    firstWord = "```";
+                    remainder = "";
+                    break;
+                case "===":
+                    firstWord = "===";
+                    remainder = "";
+                    break;
+                default:
+                    firstWord = "";
+                    remainder = trimmed;
+            }
         } else {
             firstWord = trimmed.substring(0, splitPos);
             remainder = trimmed.substring(splitPos + 1).trim();
         }
 
+        // System.out.println("Tag: " + firstWord + " Remaining: " + remainder);
         return new String[] { firstWord, remainder };
     }
 
@@ -79,13 +97,29 @@ public class SlideParser implements ControllerInterface {
             case ">":
                 returnComponent.setTag("blockquote");
                 break;
+            case "->":
+                returnComponent.setTag("sectChange");
+                break;
+            case "```":
+                if (!cfOpen) {
+                    cfOpen = true;
+                    returnComponent.setTag("pre");
+                } else {
+                    cfOpen = false;
+                    returnComponent.setTag("/pre");
+                }
+                break;
+            case "===":
+                returnComponent.setTag("nextSlide");
+                returnComponent.setContent(data);
+                break;
             default:
                 // Fall through becomes paragraphs
                 returnComponent.setTag("p");
                 returnComponent.setContent(token + " " + data); // Reassemble paragraph text
                 break;
         }
-        if (!returnComponent.getTag().equals("p")) {
+        if (!(returnComponent.getTag().equals("p"))) {
             returnComponent.setContent(data);
         }
         System.out.println("Created " + returnComponent);
@@ -106,7 +140,8 @@ public class SlideParser implements ControllerInterface {
         line = line.replaceAll("\\|\\|(.*?)\\|\\|", "<ins>$1</ins>"); // Underline -> ||
         line = line.replaceAll("\\;\\;(.*?)\\;\\;", "<sup>$1</sup>"); // Superscript -> ;;
         line = line.replaceAll("\\,\\,(.*?)\\,\\,", "<sub>$1</sub>"); // Subscript -> ,,
-        line = line.replaceAll("\\`(.*?)\\`", "<code>$1</code>"); // Inline monospace code -> `
+        if (!line.equals("```"))
+            line = line.replaceAll("\\`(.*?)\\`", "<code>$1</code>"); // Inline monospace code -> `
 
         return line;
    }
@@ -121,12 +156,39 @@ public class SlideParser implements ControllerInterface {
             while ((curLine = input.readLine()) != null) {
                 String[] lineComponents = getLineToken(curLine);
                 lineComponents[1] = subParse(lineComponents[1]); // Handles inline symbols
-                tagObjects.add(processToken(lineComponents[0],lineComponents[1]));
+                TagComponent curToken = processToken(lineComponents[0],lineComponents[1]);
+                tagObjects.add(curToken);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return tagObjects;
+    }
+
+    private List<List<TagComponent>> splitOnDelimiter(List<TagComponent> input, String delimiterTag
+    ) {
+        List<List<TagComponent>> sections = new ArrayList<>();
+        // 1) start with one bucket
+        sections.add(new ArrayList<>());
+
+        for (TagComponent comp : input) {
+            if (delimiterTag.equals(comp.getTag())) {
+                // 2a) on delimiter → start a fresh bucket
+                sections.add(new ArrayList<>());
+            } else {
+                // 2b) otherwise append to current (last) bucket
+                sections.get(sections.size() - 1).add(comp);
+            }
+        }
+
+        // 3) if your very last element was a delimiter, you'll have an extra empty bucket;
+        //    remove it if you don't want that trailing empty section
+        int lastIdx = sections.size() - 1;
+        if (sections.get(lastIdx).isEmpty() && sections.size() > 1) {
+            sections.remove(lastIdx);
+        }
+
+        return sections;
     }
 
     public ReturnObject<?> request(ControllerInterface sender, String message) {
@@ -136,8 +198,15 @@ public class SlideParser implements ControllerInterface {
             case "PROCESS_SOURCE":
                 sourceText = (String) c.request(this, "GET_CONTENT").getValue();
                 c.request(this, "LAYOUT_READY");
+                break;
             case "GET_LAYOUT":
-                return new ReturnObject<>(returnList);
+                List<TagComponent> splitList = splitOnDelimiter(returnList, "nextSlide").get(curSlide - 1);
+                System.out.println(splitList);
+                return new ReturnObject<>(splitList);
+            case "SET_SLIDE_NUM":
+                curSlide = (int) c.request(this, "WHAT_SLIDE").getValue();
+                System.out.println("current slide assigned: " + curSlide);
+                break;
         }
         return null; // No return data here.
     }
