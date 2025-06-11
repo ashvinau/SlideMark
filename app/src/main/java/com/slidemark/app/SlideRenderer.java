@@ -147,7 +147,15 @@ public class SlideRenderer implements ControllerInterface {
                         sb.append(" ").append(comp.getParams().trim());
                     }
                     sb.append(">");
-                    if (comp.getTag().equals("pre") || comp.getTag().equals("/pre")) {
+                    if (comp.getTag().equals("pre") || // All the tags we don't want to cap off
+                        comp.getTag().equals("/pre") ||
+                        comp.getTag().equals("nextSlide") ||
+                        comp.getTag().equals("sectChange") ||
+                        comp.getTag().equals("ul") ||
+                        comp.getTag().equals("/ul") ||
+                        comp.getTag().equals("ol") ||
+                        comp.getTag().equals("/ol")
+                    ) {
                         continue;
                     } else {
                         sb.append(comp.getContent())
@@ -183,7 +191,7 @@ public class SlideRenderer implements ControllerInterface {
 
         engine.loadContent(finalHtml);
 
-        //System.out.println(finalHtml);
+        System.out.println(finalHtml);
     }
 
 
