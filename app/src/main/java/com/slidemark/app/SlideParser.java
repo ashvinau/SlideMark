@@ -1,12 +1,12 @@
 package com.slidemark.app;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import javax.swing.text.html.HTML;
+import java.util.*;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.io.IOException;
-import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SlideParser implements ControllerInterface {
     private ControllerInterface c;
@@ -14,13 +14,16 @@ public class SlideParser implements ControllerInterface {
     private List<TagComponent> tagObjects;
     private boolean cfOpen = false;
     int curSlide;
+    int listDepth;
+    private static final Pattern UL_ITEM = Pattern.compile("^(\\t*)-");
 
     public SlideParser(ControllerInterface newC) {
         if (newC != null)
             c = newC;
         sourceText = "";
         tagObjects = new ArrayList<>();
-
+        listDepth = 0;
+        curSlide = 1;
     }
 
     /**
@@ -36,8 +39,8 @@ public class SlideParser implements ControllerInterface {
         String firstWord = "";
         String remainder = "";
 
-        // Trim off leading/trailing whitespace
-        String trimmed = input.trim();
+        // Trim off trailing whitespace
+        String trimmed = input.stripTrailing();
         if (trimmed.isEmpty()) {
             return new String[] { "", "" };
         }
@@ -75,7 +78,28 @@ public class SlideParser implements ControllerInterface {
     private TagComponent processToken(String token, String data) {
         TagComponent returnComponent = new TagComponent();
         System.out.println("Token: -" + token + "-");
-        switch (token) {
+        String curToken = token;
+
+        if (curToken.matches(UL_ITEM.pattern())) {
+            curToken = "+-+"; // Unique token generated for list items since switch cant regex
+        } else if (Arrays.asList("+-+", "+--", "--+").contains(curToken)) {
+            // Do nothing
+        } else {
+            System.out.println("UL Depth reset");
+            adjustULDepth(0);
+        }
+
+        switch (curToken) {
+            case "+-+": // List item
+                processUL(token, data);
+                returnComponent.setTag("li");
+                break;
+            case "+--":
+                returnComponent.setTag("ul");
+                break;
+            case "--+":
+                returnComponent.setTag("/ul");
+                break;
             case "#":
                 returnComponent.setTag("h1"); // Headers
                 break;
@@ -116,14 +140,43 @@ public class SlideParser implements ControllerInterface {
             default:
                 // Fall through becomes paragraphs
                 returnComponent.setTag("p");
-                returnComponent.setContent(token + " " + data); // Reassemble paragraph text
+                returnComponent.setContent(curToken + " " + data); // Reassemble paragraph text
                 break;
         }
-        if (!(returnComponent.getTag().equals("p"))) {
-            returnComponent.setContent(data);
-        }
+        if (!(returnComponent.getTag().equals("p")))
+           returnComponent.setContent(data);
+
         System.out.println("Created " + returnComponent);
         return returnComponent;
+    }
+
+    private int countTabsByScan(String prefix) {
+        int depth = 1; // Assume token is list and at least one is open
+        for (char c : prefix.toCharArray()) {
+            if (c == '\t') depth++;
+            else break;    // stop as soon as you hit something that isn’t a tab
+        }
+        return depth;
+    }
+
+    private void processUL(String token, String data) {
+        System.out.println("UL Processing, token: " + token + " data: " + data);
+        int targetDepth = countTabsByScan(token);
+        System.out.println("Target Depth: " + targetDepth + " Current Depth: " + listDepth);
+        adjustULDepth(targetDepth);
+    }
+
+    private void adjustULDepth(int targetDepth) {
+       while (listDepth < targetDepth) {
+           tagObjects.add(processToken("+--", ""));
+           listDepth++;
+           System.out.println("Opened UL");
+       }
+       while (listDepth > targetDepth) {
+           tagObjects.add(processToken("--+", ""));
+           listDepth--;
+           System.out.println("Closed UL");
+       }
     }
 
     // Replaces the markdown token with the equivalent html tag inline.
@@ -146,14 +199,17 @@ public class SlideParser implements ControllerInterface {
         return line;
    }
 
-
     private List<TagComponent> parse() {
         System.out.println("Parser: Starting parse...");
-        System.out.println(sourceText);
+        System.out.println("UL Depth reset");
+        adjustULDepth(0);
+        //System.out.println(sourceText);
         tagObjects.clear();
         try (BufferedReader input = new BufferedReader(new StringReader(sourceText))) {
             String curLine;
             while ((curLine = input.readLine()) != null) {
+                if (curLine.isEmpty())
+                    continue;
                 String[] lineComponents = getLineToken(curLine);
                 lineComponents[1] = subParse(lineComponents[1]); // Handles inline symbols
                 TagComponent curToken = processToken(lineComponents[0],lineComponents[1]);
@@ -165,24 +221,18 @@ public class SlideParser implements ControllerInterface {
         return tagObjects;
     }
 
-    private List<List<TagComponent>> splitOnDelimiter(List<TagComponent> input, String delimiterTag
-    ) {
+    private List<List<TagComponent>> splitOnDelimiter(List<TagComponent> input, String delimiterTag) {
         List<List<TagComponent>> sections = new ArrayList<>();
-        // 1) start with one bucket
         sections.add(new ArrayList<>());
 
         for (TagComponent comp : input) {
             if (delimiterTag.equals(comp.getTag())) {
-                // 2a) on delimiter → start a fresh bucket
                 sections.add(new ArrayList<>());
             } else {
-                // 2b) otherwise append to current (last) bucket
                 sections.get(sections.size() - 1).add(comp);
             }
         }
 
-        // 3) if your very last element was a delimiter, you'll have an extra empty bucket;
-        //    remove it if you don't want that trailing empty section
         int lastIdx = sections.size() - 1;
         if (sections.get(lastIdx).isEmpty() && sections.size() > 1) {
             sections.remove(lastIdx);
