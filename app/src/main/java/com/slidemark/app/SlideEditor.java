@@ -155,6 +155,12 @@ public class SlideEditor implements ControllerInterface {
                 break;
             case "GET_FILENAME":
                 return new ReturnObject<Object>(getCurFilename());
+            case "EDITOR_INSERT_DELIMITER":
+                editor.insertText(editor.getLength(), "\n===\n");
+                editor.requestFollowCaret();
+                editor.moveTo(editor.getText().length());
+                update();
+                break;
             default:
                 return null;
         }

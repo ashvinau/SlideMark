@@ -67,6 +67,10 @@ public class Controller implements ControllerInterface {
                 return parser.request(this, "GET_LAYOUT");
             case "SET_SLIDE_NUM":
                 return parser.request(this, "SET_SLIDE_NUM");
+            case "SEND_ALL_LAYOUTS":
+                return parser.request(this, "GET_ALL_LAYOUTS");
+            case "INSERT_DELIMITER_INTO_EDITOR":
+                return editor.request(this, "EDITOR_INSERT_DELIMITER");
 
         }
 
@@ -80,10 +84,10 @@ public class Controller implements ControllerInterface {
                 return editor.request(this, "GET_CONTENT");
             case "LAYOUT_READY":
                 return renderer.request(this, "LAYOUT_READY");
-            case "SET_CUR_SLIDE":
-                return renderer.request(this, "SET_CUR_SLIDE" );
             case "WHAT_SLIDE":
                 return renderer.request(this, "WHAT_SLIDE");
+            case "REQUEST_RENDERER_ADVANCE":
+                return renderer.request(this, "SET_CUR_SLIDE");
         }
         return null;
     }
