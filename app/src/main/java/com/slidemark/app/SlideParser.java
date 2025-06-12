@@ -1,11 +1,9 @@
 package com.slidemark.app;
 
-import javax.swing.text.html.HTML;
 import java.util.*;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.io.IOException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SlideParser implements ControllerInterface {
@@ -13,17 +11,18 @@ public class SlideParser implements ControllerInterface {
     private String sourceText;
     private List<TagComponent> tagObjects;
     private boolean cfOpen = false;
-    int curSlide;
-    int listDepth;
+    int curSlide = 1;
+    int ULlistDepth = 0;
+    int OLlistDepth = 0;
     private static final Pattern UL_ITEM = Pattern.compile("^(\\t*)-");
+    private static final Pattern OL_ITEM = Pattern.compile("^(\\t*)(\\d+)\\.");
+
 
     public SlideParser(ControllerInterface newC) {
         if (newC != null)
             c = newC;
         sourceText = "";
         tagObjects = new ArrayList<>();
-        listDepth = 0;
-        curSlide = 1;
     }
 
     /**
@@ -81,17 +80,37 @@ public class SlideParser implements ControllerInterface {
         String curToken = token;
 
         if (curToken.matches(UL_ITEM.pattern())) {
-            curToken = "+-+"; // Unique token generated for list items since switch cant regex
-        } else if (Arrays.asList("+-+", "+--", "--+").contains(curToken)) {
-            // Do nothing
+            curToken = "+-+"; // Unique token generated for unordered list items since switch cant regex
+        } else if ("+-+".equals(curToken)) {
+            // Do nothing - Infinite loop protection
+        } else if (Arrays.asList("+--", "--+").contains(curToken)) {
+            // Token is a ul or /ul, we can reset the depth of the OL.
+            System.out.println("OL Depth reset");
+            adjustOLDepth(0);
         } else {
-            System.out.println("UL Depth reset");
+            System.out.println("UL Depth reset"); // Token is neither
             adjustULDepth(0);
         }
 
+        if (curToken.matches(OL_ITEM.pattern())) {
+            curToken = "-+-";
+        } else if ("-+-".equals(curToken)) {
+            // Do nothing
+        } else if (Arrays.asList("-++", "++-").contains(curToken)) {
+            System.out.println("UL Depth reset");
+            adjustULDepth(0);
+        } else {
+            System.out.println("OL Depth reset");
+            adjustOLDepth(0);
+        }
+
         switch (curToken) {
-            case "+-+": // List item
+            case "+-+": // Unordered List item
                 processUL(token, data);
+                returnComponent.setTag("li");
+                break;
+            case "-+-": // Ordered list item
+                processOL(token, data);
                 returnComponent.setTag("li");
                 break;
             case "+--":
@@ -99,6 +118,12 @@ public class SlideParser implements ControllerInterface {
                 break;
             case "--+":
                 returnComponent.setTag("/ul");
+                break;
+            case "-++":
+                returnComponent.setTag("ol");
+                break;
+            case "++-":
+                returnComponent.setTag("/ol");
                 break;
             case "#":
                 returnComponent.setTag("h1"); // Headers
@@ -162,22 +187,44 @@ public class SlideParser implements ControllerInterface {
     private void processUL(String token, String data) {
         System.out.println("UL Processing, token: " + token + " data: " + data);
         int targetDepth = countTabsByScan(token);
-        System.out.println("Target Depth: " + targetDepth + " Current Depth: " + listDepth);
+        System.out.println("Target Depth: " + targetDepth + " Current Depth: " + ULlistDepth);
         adjustULDepth(targetDepth);
     }
 
     private void adjustULDepth(int targetDepth) {
-       while (listDepth < targetDepth) {
+       while (ULlistDepth < targetDepth) {
            tagObjects.add(processToken("+--", ""));
-           listDepth++;
+           ULlistDepth++;
            System.out.println("Opened UL");
        }
-       while (listDepth > targetDepth) {
+       while (ULlistDepth > targetDepth) {
            tagObjects.add(processToken("--+", ""));
-           listDepth--;
+           ULlistDepth--;
            System.out.println("Closed UL");
        }
     }
+
+    private void processOL(String token, String data) {
+        System.out.println("OL Processing, token: " + token + " data: " + data);
+        int targetDepth = countTabsByScan(token);
+        System.out.println("Target Depth: " + targetDepth + " Current Depth: " + OLlistDepth);
+        adjustOLDepth(targetDepth);
+    }
+
+    private void adjustOLDepth(int targetDepth) {
+        while (OLlistDepth < targetDepth) {
+            tagObjects.add(processToken("-++", ""));
+            OLlistDepth++;
+            System.out.println("Opened OL");
+        }
+        while (OLlistDepth > targetDepth) {
+            tagObjects.add(processToken("++-", ""));
+            OLlistDepth--;
+            System.out.println("Closed OL");
+        }
+    }
+
+
 
     // Replaces the markdown token with the equivalent html tag inline.
     // The regex \\*\\*(.*?)\\*\\* matches:
@@ -190,7 +237,7 @@ public class SlideParser implements ControllerInterface {
         line = line.replaceAll("\\*(.*?)\\*", "<i>$1</i>"); // Italic -> * or _
         line = line.replaceAll("\\_(.*?)\\_", "<i>$1</i>");
         line = line.replaceAll("\\~\\~(.*?)\\~\\~", "<del>$1</del>"); // Strikethrough -> ~~
-        line = line.replaceAll("\\|\\|(.*?)\\|\\|", "<ins>$1</ins>"); // Underline -> ||
+        line = line.replaceAll("\\+\\+(.*?)\\+\\+", "<ins>$1</ins>"); // Underline -> ++
         line = line.replaceAll("\\;\\;(.*?)\\;\\;", "<sup>$1</sup>"); // Superscript -> ;;
         line = line.replaceAll("\\,\\,(.*?)\\,\\,", "<sub>$1</sub>"); // Subscript -> ,,
         if (!line.equals("```"))
@@ -201,8 +248,9 @@ public class SlideParser implements ControllerInterface {
 
     private List<TagComponent> parse() {
         System.out.println("Parser: Starting parse...");
-        System.out.println("UL Depth reset");
+        System.out.println("UL/OL Depth reset");
         adjustULDepth(0);
+        adjustOLDepth(0);
         //System.out.println(sourceText);
         tagObjects.clear();
         try (BufferedReader input = new BufferedReader(new StringReader(sourceText))) {

@@ -35,7 +35,7 @@ This software aims to provide an alternative to traditional point-and-click pres
 | -------------- | ------------------------- | ------------------------ |
 | Bold           | Makes text bold.          | `**text**` or `__text__` |
 | Italics        | Makes text italic.        | `*text*` or `_text_`     |
-| Underline      | Underlines text.          | `||Underlined text||`    |
+| Underline      | Underlines text.          | `++Underlined text++`    |
 | Strike-through | Strikes through text.     | `~~strikethrough text~~` |
 | Superscript    | Creates superscript text. | `;;Superscript;;`        |
 | Subscript      | Creates subscript text.   | `,,Subscript,,`          |
@@ -99,31 +99,31 @@ A list where the order of items matter. Invoked by leading a line with a number 
 
 ##### Input
 
-```markdown
+```
 1. Item 1
-    1. Item 1.1     
+	1. Item 1.1
 2. Item 2
-    1. Item 2.1
-    2. Item 2.2
+	1. Item 2.1
+	2. Item 2.2
 3. Item 3
-    1. Item 3.1
-    	1. Item 3.1.1
-    	2. Item 3.1.2
-    2. Item 3.2
+	1. Item 3.1
+		1. Item 3.1.1
+		2. Item 3.1.2
+	2. Item 3.2
 ```
 
 ##### Output
 
 1. Item 1
-    1. Item 1.1     
+	1. Item 1.1
 2. Item 2
-    1. Item 2.1
-    2. Item 2.2
+	1. Item 2.1
+	2. Item 2.2
 3. Item 3
-    1. Item 3.1
-      1. Item 3.1.1
-      2. Item 3.1.2
-    2. Item 3.2
+	1. Item 3.1
+		1. Item 3.1.1
+		2. Item 3.1.2
+	2. Item 3.2
 
 #### Unordered List
 
@@ -131,7 +131,7 @@ A list where order doesn't matter. Invoked similar to ordered list, except inste
 
 ##### Input
 
-```markdown
+```
 - Shapes
 	- Circle
 	- Square
@@ -154,7 +154,6 @@ A list where order doesn't matter. Invoked similar to ordered list, except inste
 	- Red
 	- Green
 		- Lime Green
-		
 		- Forest Green
 	- Blue
 
@@ -174,11 +173,11 @@ There may be no output here depending on your viewer.
 
 ### Tables
 
-The headers of the columns are in the first line and will be bolded. They are separated by a single pipe symbol `|`, buffered by a space. The next line contains one dash between each separator. (Justiffy text coming later). The following rows of data are formatted the same as the headers, with a pipe buffered by a space.
+The headers of the columns are in the first line and will be bolded. They are separated by a single pipe symbol `|`, buffered by a space. The next line contains one dash between each separator. (Justify text coming later). The following rows of data are formatted the same as the headers, with a pipe buffered by a space.
 
 ##### Input
 
-```markdown
+```
 | Column 1 | Column 2 | Column 3 |
 |-|-|-|
 | Data 1   | Data 2   | Data 3   |

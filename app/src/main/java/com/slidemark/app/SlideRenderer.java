@@ -191,7 +191,7 @@ public class SlideRenderer implements ControllerInterface {
 
         engine.loadContent(finalHtml);
 
-        System.out.println(finalHtml);
+        //System.out.println(finalHtml);
     }
 
 
