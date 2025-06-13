@@ -151,7 +151,9 @@ VBox, HBox, SplitPane {
 /* ===========================
    Renderer Specific Styling
    =========================== */
+
 .render-view-contain {
+
     -fx-background-color: #303030;
     -fx-padding: 10;
 }
@@ -181,7 +183,7 @@ VBox, HBox, SplitPane {
 .slide-box {
     -fx-background-color: #303030;
     -fx-border-color: #303030;
-    -fx-padding: 10;  /* ✅ Fixed from "Center" */
+    -fx-padding: 10;
     -fx-alignment: center;
 }
 
@@ -200,10 +202,6 @@ VBox, HBox, SplitPane {
     -fx-background-color: transparent;
 }
 
-.carousel-scroll .scroll-bar:horizontal,
-.carousel-scroll .scroll-bar:vertical {
-    -fx-background-color: transparent;
-}
 
 .present-button {
     -fx-font-size: 14;

@@ -291,21 +291,48 @@ public class SlideParser implements ControllerInterface {
 
     public ReturnObject<?> request(ControllerInterface sender, String message) {
         System.out.println("");
-        List<TagComponent> returnList = new ReturnObject<>(parse()).getValue();
+        List<TagComponent> parsedTagObjects = new ReturnObject<>(parse()).getValue();
+
         switch (message) {
             case "PROCESS_SOURCE":
                 sourceText = (String) c.request(this, "GET_CONTENT").getValue();
                 c.request(this, "LAYOUT_READY");
                 break;
+
             case "GET_LAYOUT":
-                List<TagComponent> splitList = splitOnDelimiter(returnList, "nextSlide").get(curSlide - 1);
-                System.out.println(splitList);
-                return new ReturnObject<>(splitList);
+                List<List<TagComponent>> splitSlides = splitOnDelimiter(parsedTagObjects, "nextSlide");
+                int totalSlides = splitSlides.size();
+                curSlide = (int) c.request(this, "WHAT_SLIDE").getValue();
+
+                if (curSlide > totalSlides) {
+                    curSlide = totalSlides;
+                }
+                if (curSlide <= 0) {
+                    curSlide = 1;
+                }
+
+                if (curSlide < totalSlides) {
+                    c.request(this, "REQUEST_RENDERER_ADVANCE");
+                } else {
+                    System.out.println("Parser: On last slide or no more slides detected.");
+                }
+
+
+                List<TagComponent> currentSlideContent = splitSlides.get(curSlide - 1);
+                System.out.println("Returning slide " + curSlide + " content.");
+                System.out.println(currentSlideContent);
+                return new ReturnObject<>(currentSlideContent);
+
+            case "GET_ALL_LAYOUTS":
+                List<List<TagComponent>> allLayouts = splitOnDelimiter(parsedTagObjects, "nextSlide");
+                return new ReturnObject<>(allLayouts);
+
+
             case "SET_SLIDE_NUM":
                 curSlide = (int) c.request(this, "WHAT_SLIDE").getValue();
-                System.out.println("current slide assigned: " + curSlide);
+                System.out.println("current slide assigned (Parser): " + curSlide);
                 break;
         }
-        return null; // No return data here.
+        return null;
     }
 }
