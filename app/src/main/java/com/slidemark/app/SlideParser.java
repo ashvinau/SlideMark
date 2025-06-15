@@ -31,7 +31,7 @@ public class SlideParser implements ControllerInterface {
      * @param input  the string to split
      * @return       a two‐element array where [0] is the first word and [1] is the rest of the text
      */
-   private String[] getLineToken(String input) {
+    private String[] getLineToken(String input) {
         if (input == null) {
             return new String[] { "", "" }; }
 
@@ -169,7 +169,7 @@ public class SlideParser implements ControllerInterface {
                 break;
         }
         if (!(returnComponent.getTag().equals("p")))
-           returnComponent.setContent(data);
+            returnComponent.setContent(data);
 
         System.out.println("Created " + returnComponent);
         return returnComponent;
@@ -192,16 +192,16 @@ public class SlideParser implements ControllerInterface {
     }
 
     private void adjustULDepth(int targetDepth) {
-       while (ULlistDepth < targetDepth) {
-           tagObjects.add(processToken("+--", ""));
-           ULlistDepth++;
-           System.out.println("Opened UL");
-       }
-       while (ULlistDepth > targetDepth) {
-           tagObjects.add(processToken("--+", ""));
-           ULlistDepth--;
-           System.out.println("Closed UL");
-       }
+        while (ULlistDepth < targetDepth) {
+            tagObjects.add(processToken("+--", ""));
+            ULlistDepth++;
+            System.out.println("Opened UL");
+        }
+        while (ULlistDepth > targetDepth) {
+            tagObjects.add(processToken("--+", ""));
+            ULlistDepth--;
+            System.out.println("Closed UL");
+        }
     }
 
     private void processOL(String token, String data) {
@@ -224,8 +224,6 @@ public class SlideParser implements ControllerInterface {
         }
     }
 
-
-
     // Replaces the markdown token with the equivalent html tag inline.
     // The regex \\*\\*(.*?)\\*\\* matches:
     //   \\*\\*   → two literal characters (“**”)
@@ -244,7 +242,7 @@ public class SlideParser implements ControllerInterface {
             line = line.replaceAll("\\`(.*?)\\`", "<code>$1</code>"); // Inline monospace code -> `
 
         return line;
-   }
+    }
 
     private List<TagComponent> parse() {
         System.out.println("Parser: Starting parse...");
@@ -275,6 +273,7 @@ public class SlideParser implements ControllerInterface {
 
         for (TagComponent comp : input) {
             if (delimiterTag.equals(comp.getTag())) {
+                sections.get(sections.size() - 1).add(comp);
                 sections.add(new ArrayList<>());
             } else {
                 sections.get(sections.size() - 1).add(comp);
@@ -291,48 +290,22 @@ public class SlideParser implements ControllerInterface {
 
     public ReturnObject<?> request(ControllerInterface sender, String message) {
         System.out.println("");
-        List<TagComponent> parsedTagObjects = new ReturnObject<>(parse()).getValue();
-
+        List<TagComponent> returnList = new ReturnObject<>(parse()).getValue();
         switch (message) {
             case "PROCESS_SOURCE":
                 sourceText = (String) c.request(this, "GET_CONTENT").getValue();
                 c.request(this, "LAYOUT_READY");
                 break;
-
             case "GET_LAYOUT":
-                List<List<TagComponent>> splitSlides = splitOnDelimiter(parsedTagObjects, "nextSlide");
-                int totalSlides = splitSlides.size();
-                curSlide = (int) c.request(this, "WHAT_SLIDE").getValue();
-
-                if (curSlide > totalSlides) {
-                    curSlide = totalSlides;
-                }
-                if (curSlide <= 0) {
-                    curSlide = 1;
-                }
-
-                if (curSlide < totalSlides) {
-                    c.request(this, "REQUEST_RENDERER_ADVANCE");
-                } else {
-                    System.out.println("Parser: On last slide or no more slides detected.");
-                }
-
-
-                List<TagComponent> currentSlideContent = splitSlides.get(curSlide - 1);
-                System.out.println("Returning slide " + curSlide + " content.");
-                System.out.println(currentSlideContent);
-                return new ReturnObject<>(currentSlideContent);
-
-            case "GET_ALL_LAYOUTS":
-                List<List<TagComponent>> allLayouts = splitOnDelimiter(parsedTagObjects, "nextSlide");
-                return new ReturnObject<>(allLayouts);
-
-
+                List<TagComponent> splitList = splitOnDelimiter(returnList, "nextSlide").get(curSlide - 1);
+                System.out.println(splitList);
+                return new ReturnObject<>(splitList);
             case "SET_SLIDE_NUM":
                 curSlide = (int) c.request(this, "WHAT_SLIDE").getValue();
-                System.out.println("current slide assigned (Parser): " + curSlide);
+                System.out.println("current slide assigned: " + curSlide);
+
                 break;
         }
-        return null;
+        return null; // No return data here.
     }
 }
