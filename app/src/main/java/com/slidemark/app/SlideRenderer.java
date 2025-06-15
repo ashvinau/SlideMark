@@ -235,6 +235,7 @@ public class SlideRenderer implements ControllerInterface {
         curSlideIndex--;
         c.request(this, "SET_SLIDE_NUM");
         c.request(this, "PROCESS_SOURCE");
+
     }
 
 
@@ -252,13 +253,45 @@ public class SlideRenderer implements ControllerInterface {
         present.setScene(newScene);
         present.setFullScreen(true);
         present.show();
-        SnapshotParameters params = new SnapshotParameters();
+
+        newScene.setOnKeyPressed(event -> {
+            switch (event.getCode()) {
+                case ESCAPE:
+                    present.close();
+                    break;
+                case LEFT:
+                    prevSlide();
+                    slidePres.getEngine().loadContent(finalHtml);
+                    break;
+                case RIGHT:
+                    nextSlide();
+                    slidePres.getEngine().loadContent(finalHtml);
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        newScene.setOnMouseClicked(event -> {
+            switch (event.getButton()) {
+                case PRIMARY:
+                    nextSlide();
+                    slidePres.getEngine().loadContent(finalHtml);
+                    break;
+                case SECONDARY:
+                    prevSlide();
+                    slidePres.getEngine().loadContent(finalHtml);
+                    break;
+                default:
+                    break;
+            }
+        });
+        //SnapshotParameters params = new SnapshotParameters();
 
 
 
     }
 
-    //
 
     public VBox create() {
         // 1) Your outer container
