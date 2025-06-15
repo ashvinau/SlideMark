@@ -83,7 +83,7 @@ Text enclosed in brackets defines the link text when viewed, and the url or path
 
 Similar to the previous, but preceded by an exclamation point. Alt text is shown while loading or for accessibility.
 
-[Alt Text] (../images/picture.png)
+![Alt Text] (../images/picture.png)
 
 #### Horizontal Rule
 

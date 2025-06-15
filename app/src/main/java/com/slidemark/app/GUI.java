@@ -12,6 +12,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.awt.*;
 import java.util.Objects;
 
 import static javafx.application.Application.launch;
