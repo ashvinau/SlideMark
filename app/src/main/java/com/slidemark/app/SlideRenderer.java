@@ -1,6 +1,8 @@
 package com.slidemark.app;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
@@ -8,16 +10,20 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
@@ -35,30 +41,31 @@ public class SlideRenderer implements ControllerInterface {
 
     private List<TagComponent> list;
     private String finalHtml;
-    private Point size;
     private String currTemplate;
     private int currNumSect;
     private int curSlideIndex = 1;
     private static final Pattern CONTENT_PLACEHOLDER =
             Pattern.compile("\\{\\{Content(\\d+)\\}\\}");
-    //Point renderSize = new Point();
-    int renderSizeX, renderSizeY;
-    //Point liveViewSize = new Point();
-    int liveViewSizeX, liveViewSizeY;
     double zoomFactor = 0;
-
+    private int currCaroIndex;
+    private Map<Integer, WritableImage> slideThumbnails = new HashMap<>();
 
     private List<String> templates = Arrays.asList(
-            "templates/blankslide.html",
-            "templates/3rowslide.html",
-            "templates/centertitleslide.html",
-            "templates/contentonlyslide.html",
-            "templates/hamburgerslide.html",
-            "templates/imagecontentleft.html",
-            "templates/imagecontentright.html",
-            "templates/tableofcontents4.html",
-            "templates/tableofcontents6.html",
-            "templates/titleandcontent.html"
+            "templates/double-horizontal.html",
+            "templates/double-single-horizontal.html",
+            "templates/double-single-vertical.html",
+            "templates/double-vertical.html",
+            "templates/four-by-two.html",
+            "templates/single-center.html",
+            "templates/single-double-horizontal.html",
+            "templates/single-double-vertical.html",
+            "templates/single-left.html",
+            "templates/single-right.html",
+            "templates/three-by-two.html",
+            "templates/triple-horizontal.html",
+            "templates/triple-vertical.html",
+            "templates/two-by-three.html",
+            "templates/two-by-two.html"
     );
 
     public SlideRenderer(ControllerInterface c) {
@@ -83,7 +90,7 @@ public class SlideRenderer implements ControllerInterface {
     public String getTemplate() {
         String path = "templates/";
         String extension = ".html";
-        String def = path + "blankslide" + extension;
+        String def = path + "single-center" + extension;
         String filename;
 
         if (list != null) {// Grabs the last
@@ -196,34 +203,71 @@ public class SlideRenderer implements ControllerInterface {
         slideContent.setZoom(zoomFactor);
         System.out.println("zoom factor: " + zoomFactor);
         c.request(this, "SET_SLIDE_NUMS");
+
+        engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                PauseTransition pause = new PauseTransition(Duration.millis(150));
+                pause.setOnFinished(e -> {
+                    SnapshotParameters params = new SnapshotParameters();
+                    params.setFill(javafx.scene.paint.Color.TRANSPARENT);
+                    WritableImage snapshot = slideContent.snapshot(params, null);
+
+                    if (snapshot.getWidth() > 0 && snapshot.getHeight() > 0) {
+                        slideThumbnails.put(curSlideIndex, snapshot);
+                        System.out.println("Snapshot stored/updated for slide #" + curSlideIndex);
+
+                        updateCarousel();
+                    } else {
+                        System.out.println("Snapshot empty for slide #" + curSlideIndex + ", retrying...");
+                    }
+                });
+                pause.play();
+            }
+        });
+
         //System.out.println(finalHtml);
     }
 
-
     public void addSlide() {
-        curSlideIndex ++;
-        updateSlideView();
-        updateCarousel();
-    }
-
-
-
-    private static void updateCarousel() {
 
     }
 
 
-    public boolean resizeRender(Point dimensions) {
-        if (dimensions == null) return false;
+    private void updateCarousel() {
+        slideCarousel.getChildren().clear();
 
-        renderViewContain.setPrefSize(dimensions.getX(), dimensions.getY());
-        return true;
+        int maxThumbnails = 4;
+        List<Integer> keys = new ArrayList<>(slideThumbnails.keySet());
+        Collections.sort(keys);
+
+        int startKeyIndex = 0;
+        for (int i = 0; i < keys.size(); i++) {
+            if (keys.get(i) >= Math.max(1, curSlideIndex - 1)) {
+                startKeyIndex = i;
+                break;
+            }
+        }
+        for (int i = startKeyIndex; i < Math.min(startKeyIndex + maxThumbnails, keys.size()); i++) {
+            int slideNum = keys.get(i);
+            WritableImage snapshot = slideThumbnails.get(slideNum);
+
+            if (snapshot != null) {
+                ImageView thumbnail = new ImageView(snapshot);
+                thumbnail.setFitWidth(200);
+                thumbnail.setFitHeight(120);
+                thumbnail.setPreserveRatio(true);
+                slideCarousel.getChildren().add(thumbnail);
+            } else {
+                Label placeholder = new Label("Slide " + slideNum);
+                placeholder.setPrefSize(200, 120);
+                placeholder.setStyle("-fx-border-color: gray; -fx-alignment: center;");
+                slideCarousel.getChildren().add(placeholder);
+            }
+        }
     }
 
-    public boolean handleInput(Point location) {
-        System.out.println("Input received at: " + location);
-        return true;
-    }
+
+
 
     public void nextSlide(){
         curSlideIndex++;
@@ -294,14 +338,14 @@ public class SlideRenderer implements ControllerInterface {
 
 
     public VBox create() {
-        // 1) Your outer container
+        // Outer container
         renderViewContain.getStyleClass().add("render-view-contain");
         renderViewContain.setAlignment(Pos.TOP_CENTER);
 
         Label renderCap = new Label("Slide View");
         renderCap.getStyleClass().add("render-cap");
 
-        // 2) Build the WebView wrapper hierarchy...
+        // Main slide WebView
         slideContent.setContextMenuEnabled(false);
         slideContent.getStyleClass().add("slide-webview");
 
@@ -312,39 +356,28 @@ public class SlideRenderer implements ControllerInterface {
         slideBox = new StackPane(slideContentWrapper);
         slideBox.getStyleClass().add("slide-box");
 
-        // 3) Instead of hard–coding 780×380, bind to the container’s width:
-        //    liveViewSizeX = renderViewContain.getWidth()
-        //    liveViewSizeY = liveViewSizeX * 0.6
+        // Responsive sizing
         slideContent.prefWidthProperty().bind(renderViewContain.widthProperty());
-        slideContent.prefHeightProperty().bind(
-                renderViewContain.widthProperty().multiply(0.6)
-        );
+        slideContent.prefHeightProperty().bind(renderViewContain.widthProperty().multiply(0.56));
         slideContent.maxWidthProperty().bind(renderViewContain.widthProperty());
-        slideContent.maxHeightProperty().bind(
-                renderViewContain.widthProperty().multiply(0.6)
-        );
+        slideContent.maxHeightProperty().bind(renderViewContain.widthProperty().multiply(0.56));
 
         zoomFactor = renderViewContain.widthProperty().getValue() / 1920;
         slideContent.setZoom(zoomFactor);
 
-
         slideContentWrapper.prefWidthProperty().bind(renderViewContain.widthProperty());
-        slideContentWrapper.prefHeightProperty().bind(
-                renderViewContain.widthProperty().multiply(0.6)
-        );
-        // If you’re clipping, you need to update the clip’s size whenever the wrapper resizes:
+        slideContentWrapper.prefHeightProperty().bind(renderViewContain.widthProperty().multiply(0.56));
+
         Rectangle clip = new Rectangle();
-        // bind the clip to match the wrapper’s size
         clip.widthProperty().bind(slideContentWrapper.widthProperty());
         clip.heightProperty().bind(slideContentWrapper.heightProperty());
         slideContentWrapper.setClip(clip);
 
         slideBox.prefWidthProperty().bind(renderViewContain.widthProperty());
-        slideBox.prefHeightProperty().bind(
-                renderViewContain.widthProperty().multiply(0.6)
-        );
+        slideBox.prefHeightProperty().bind(renderViewContain.widthProperty().multiply(0.56));
 
-        // 4) The rest of your UI…
+        // Slide carousel (initialized but populated later)
+        slideCarousel = new HBox();
         slideCarousel.getStyleClass().add("slide-carousel");
         slideCarousel.setSpacing(10);
 
@@ -353,6 +386,7 @@ public class SlideRenderer implements ControllerInterface {
         carouselScroll.setPrefHeight(100);
         carouselScroll.getStyleClass().add("carousel-scroll");
 
+        // Buttons
         Button presentButton = new Button("Presentation Mode");
         presentButton.getStyleClass().add("present-button");
         presentButton.setOnAction(e -> startPresentation());
@@ -377,8 +411,12 @@ public class SlideRenderer implements ControllerInterface {
         mainContent.setAlignment(Pos.TOP_CENTER);
 
         renderViewContain.getChildren().setAll(renderCap, mainContent, buttonBox);
+
+        Platform.runLater(this::updateCarousel);
+
         return renderViewContain;
     }
+
 
     @Override
     public ReturnObject<?> request(ControllerInterface sender, String message) {
