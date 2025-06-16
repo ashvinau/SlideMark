@@ -1,0 +1,15 @@
+=== double-horizontal
+=== double-single-horizontal
+=== double-single-vertical
+=== double-vertical
+=== four-by-two
+=== single-center
+=== single-double-horizontal
+=== single-double-vertical
+=== single-left
+=== single-right
+=== three-by-two
+=== triple-horizontal
+=== triple-vertical
+=== two-by-three
+=== two-by-two

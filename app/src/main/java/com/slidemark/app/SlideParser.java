@@ -1,6 +1,5 @@
 package com.slidemark.app;
 
-import java.sql.SQLOutput;
 import java.util.*;
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -80,7 +79,7 @@ public class SlideParser implements ControllerInterface {
     }
 
     private void adjustTableStatus(boolean open) {
-        System.out.println("Adjust table status called, current open status: " + tableOpen);
+        System.out.println("Adjust table status called, current open status: " + tableOpen + " requested status: " + open);
         if (tableOpen == false && open == true) { // Table is closed - open requested
                 tagObjects.add(processToken("==-", ""));
                 tableOpen = true;
@@ -88,11 +87,9 @@ public class SlideParser implements ControllerInterface {
         }
 
         if (tableOpen == true && open == false) { // Table is open - close requested
-            if (open = false) { // Close requested
                 tagObjects.add(processToken("-==", ""));
                 tableOpen = false;
                 System.out.println("Table status changed from true -> false");
-            }
         }
     }
 
@@ -144,7 +141,7 @@ public class SlideParser implements ControllerInterface {
         if (curToken.equals("|")) {
             adjustTableStatus(true);
             curToken = "-*-";
-        } else if ("-*-".equals(curToken)) {
+        } else if (Arrays.asList("-*-", "==-", "-==").contains(curToken)) {
             // Nothing - Converts table row to internal token
         } else {
             adjustTableStatus(false);
