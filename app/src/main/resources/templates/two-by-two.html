@@ -13,6 +13,7 @@
             background: #f0f4f8; /* soft and soothing background */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         .slide {
             display: flex;
             flex-direction: column;
@@ -38,7 +39,8 @@
             padding: 20px;
             box-sizing: border-box;
             border-radius: 14px;
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.75); /* translucent white */
+            backdrop-filter: blur(10px); /* frosted glass effect */
             box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
@@ -60,9 +62,11 @@
         h4 { font-size: 700%; }
         h5 { font-size: 600%; }
         h6 { font-size: 500%; }
+
         h1, h2, h3, h4, h5, h6 {
             margin: 0;
         }
+
         p {
             font-size: 250%;
             padding: 0;

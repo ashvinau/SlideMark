@@ -43,19 +43,19 @@ public class SlideRenderer implements ControllerInterface {
     String workDir = "";
 
     private List<String> templates = Arrays.asList(
-            "templates/double-horizontal.html",
-            "templates/double-single-horizontal.html",
-            "templates/double-single-vertical.html",
             "templates/double-vertical.html",
+            "templates/double-single-vertical.html",
+            "templates/double-single-horizontal.html",
+            "templates/double-horizontal.html",
             "templates/four-by-two.html",
             "templates/single-center.html",
-            "templates/single-double-horizontal.html",
             "templates/single-double-vertical.html",
+            "templates/single-double-horizontal.html",
             "templates/single-left.html",
             "templates/single-right.html",
             "templates/three-by-two.html",
-            "templates/triple-horizontal.html",
             "templates/triple-vertical.html",
+            "templates/triple-horizontal.html",
             "templates/two-by-three.html",
             "templates/two-by-two.html"
     );
