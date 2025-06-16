@@ -381,9 +381,15 @@ public class SlideParser implements ControllerInterface {
                 c.request(this, "LAYOUT_READY");
                 break;
             case "GET_LAYOUT":
-                List<TagComponent> splitList = splitOnDelimiter(returnList, "nextSlide").get(curSlide - 1);
-                System.out.println(splitList);
-                return new ReturnObject<>(splitList);
+                List<List<TagComponent>> splitList = splitOnDelimiter(returnList, "nextSlide");
+                if (curSlide >= 1 && curSlide <= splitList.size()) {
+                    List<TagComponent> subList = splitList.get(curSlide - 1);
+                    System.out.println(subList);
+                    return new ReturnObject<>(subList);
+                } else {
+                    System.out.println("Invalid slide number");
+                    return new ReturnObject<>(new ArrayList<TagComponent>());
+                }
             case "SET_SLIDE_NUM":
                 curSlide = (int) c.request(this, "WHAT_SLIDE").getValue();
                 System.out.println("current slide assigned: " + curSlide);

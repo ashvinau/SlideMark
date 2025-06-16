@@ -73,10 +73,11 @@ public class SlideEditor implements ControllerInterface {
         chooser.setTitle("Select File to Load");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Documents", "*.txt", "*.md"));
         currentFile = chooser.showOpenDialog(null);
-        workingDir = currentFile.getParentFile().getAbsolutePath();
-        System.out.println("Working dir established: " + workingDir);
         if (currentFile == null)
             return false;
+        workingDir = currentFile.getParentFile().getAbsolutePath();
+        System.out.println("Working dir established: " + workingDir);
+
 
         try {
             setContent(Files.readString(currentFile.toPath()));
@@ -138,7 +139,10 @@ public class SlideEditor implements ControllerInterface {
     }
 
     private String getCurFilename() {
-        return currentFile.getName();
+        if (currentFile != null)
+            return currentFile.getName();
+        else
+            return "Untitled";
     }
 
 
