@@ -1,9 +1,11 @@
 package com.slidemark.app;
 
+import java.sql.SQLOutput;
 import java.util.*;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.io.IOException;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SlideParser implements ControllerInterface {
@@ -11,12 +13,15 @@ public class SlideParser implements ControllerInterface {
     private String sourceText;
     private List<TagComponent> tagObjects;
     private boolean cfOpen = false;
+    private boolean tableOpen = false;
     int curSlide = 1;
     int ULlistDepth = 0;
     int OLlistDepth = 0;
+    String workingDirectory = ".";
     private static final Pattern UL_ITEM = Pattern.compile("^(\\t*)-");
     private static final Pattern OL_ITEM = Pattern.compile("^(\\t*)(\\d+)\\.");
-
+    private static final Pattern LINK_TOKEN = Pattern.compile("\\[(.*?)\\]\\s*\\(([^)]+)\\)");
+    private static final Pattern IMAGE_TOKEN = Pattern.compile("!\\[(.*?)\\]\\s*\\(([^)]+)\\)");
 
     public SlideParser(ControllerInterface newC) {
         if (newC != null)
@@ -74,10 +79,28 @@ public class SlideParser implements ControllerInterface {
         return new String[] { firstWord, remainder };
     }
 
+    private void adjustTableStatus(boolean open) {
+        System.out.println("Adjust table status called, current open status: " + tableOpen);
+        if (tableOpen == false && open == true) { // Table is closed - open requested
+                tagObjects.add(processToken("==-", ""));
+                tableOpen = true;
+                System.out.println("Table status changed from false -> true");
+        }
+
+        if (tableOpen == true && open == false) { // Table is open - close requested
+            if (open = false) { // Close requested
+                tagObjects.add(processToken("-==", ""));
+                tableOpen = false;
+                System.out.println("Table status changed from true -> false");
+            }
+        }
+    }
+
     private TagComponent processToken(String token, String data) {
         TagComponent returnComponent = new TagComponent();
         System.out.println("Token: -" + token + "-");
-        String curToken = token;
+        String curLine = String.join(" ", token, data); // We need both the original token + data
+        String curToken = token; // as well as a potential internal token
 
         if (curToken.matches(UL_ITEM.pattern())) {
             curToken = "+-+"; // Unique token generated for unordered list items since switch cant regex
@@ -104,7 +127,67 @@ public class SlideParser implements ControllerInterface {
             adjustOLDepth(0);
         }
 
+        if (curLine.matches(IMAGE_TOKEN.pattern())) {
+            curToken = "-=-";
+            System.out.println("Image pattern matched, replaced with -=-");
+        } else if ("-=-".equals(curToken)) {
+            // Nothing - Converts image pattern to internal token
+        }
+
+        if (curLine.matches(LINK_TOKEN.pattern())) {
+            curToken = "=-=";
+            System.out.println("Link pattern matched, replaced with =-=");
+        } else if ("=-=".equals(curToken)) {
+            // Nothing - Converts link pattern to internal token
+        }
+
+        if (curToken.equals("|")) {
+            adjustTableStatus(true);
+            curToken = "-*-";
+        } else if ("-*-".equals(curToken)) {
+            // Nothing - Converts table row to internal token
+        } else {
+            adjustTableStatus(false);
+        }
+
         switch (curToken) {
+            case "==-":
+                returnComponent.setTag("table");
+                break;
+            case "-==":
+                returnComponent.setTag("/table");
+                break;
+            case "-*-":
+                returnComponent.setTag("tr");
+                List<String> rowData = Arrays.asList(data.split("\\|"));
+                StringBuilder rowHTML = new StringBuilder();
+                for (String item : rowData) {
+                    rowHTML.append("<td>").append(item.strip()).append("</td>");
+                }
+                data = rowHTML.toString();
+                break;
+            case "=-=": // Link
+                Matcher linkM = LINK_TOKEN.matcher(curLine);
+                System.out.println("Current line: " + curLine);
+                while (linkM.find()) {
+                    String text = linkM.group(1);
+                    String url = linkM.group(2);
+                    returnComponent.setTag("a");
+                    returnComponent.setParams("href = " + url);
+                    data = text;
+                }
+                break;
+            case "-=-": // Image
+                Matcher imgM = IMAGE_TOKEN.matcher(curLine);
+                System.out.println("Current line: " + curLine);
+                while (imgM.find()) {
+                    String alt = imgM.group(1);
+                    String src = imgM.group(2);
+                    returnComponent.setTag("img");
+                    returnComponent.setParams("src = \"" + workingDirectory + "/" + src + "\" alt = \"" + alt + "\"");
+                    data = "";
+                }
+                break;
             case "+-+": // Unordered List item
                 processUL(token, data);
                 returnComponent.setTag("li");
@@ -249,6 +332,9 @@ public class SlideParser implements ControllerInterface {
         System.out.println("UL/OL Depth reset");
         adjustULDepth(0);
         adjustOLDepth(0);
+        System.out.println("Initial table reset");
+        tableOpen = false;
+        workingDirectory = (String) c.request(this, "GET_WORKING_DIRECTORY").getValue();
         //System.out.println(sourceText);
         tagObjects.clear();
         try (BufferedReader input = new BufferedReader(new StringReader(sourceText))) {
@@ -289,10 +375,11 @@ public class SlideParser implements ControllerInterface {
     }
 
     public ReturnObject<?> request(ControllerInterface sender, String message) {
-        System.out.println("");
+
         List<TagComponent> returnList = new ReturnObject<>(parse()).getValue();
         switch (message) {
             case "PROCESS_SOURCE":
+                sourceText = "";
                 sourceText = (String) c.request(this, "GET_CONTENT").getValue();
                 c.request(this, "LAYOUT_READY");
                 break;
@@ -303,7 +390,6 @@ public class SlideParser implements ControllerInterface {
             case "SET_SLIDE_NUM":
                 curSlide = (int) c.request(this, "WHAT_SLIDE").getValue();
                 System.out.println("current slide assigned: " + curSlide);
-
                 break;
         }
         return null; // No return data here.

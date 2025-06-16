@@ -1,100 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Two by three Slide</title>
-  <style>
-      html, body {
-          margin: 0;
-          padding: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          box-sizing: border-box;
+    <title>Two by Three Slide</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, #d4fc79, #96e6a1); /* fresh minty green vibes */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         .slide {
-          border: 2px solid black; /* TODO: REMOVE when importing to JavaFX */
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
-        
+
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);  
-            grid-template-rows: repeat(3, 1fr); 
-            gap: 20px;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 24px;
             margin: 40px;
             width: calc(100% - 80px);
             height: calc(100% - 80px);
-            box-sizing: border-box; 
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .grid-container > div {
-          padding: 10px;
-          box-sizing: border-box;
-          border: 1px solid black;
-          background-color: white;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 16px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            transition: transform 0.3s ease;
         }
-        h1 {
-            font-size: 1000%;
+
+        .grid-container > div:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            cursor: pointer;
         }
-        h2 {
-            font-size: 900%;
-        }
-        h3 {
-            font-size: 800%
-        }
-        h4 {
-            font-size: 700%
-        }
-        h5 {
-            font-size: 600%
-        }
-        h6 {
-            font-size: 500%
-        }
+
+        h1 { font-size: 1000%; }
+        h2 { font-size: 900%; }
+        h3 { font-size: 800%; }
+        h4 { font-size: 700%; }
+        h5 { font-size: 600%; }
+        h6 { font-size: 500%; }
+
         h1, h2, h3, h4, h5, h6 {
-            margin: 0; 
+            margin: 0;
         }
+
         p {
             font-size: 250%;
             padding: 0;
             margin: 0;
         }
-
-  </style>
+    </style>
 </head>
-<body class = "slide">
-
-  <div class = "grid-container">
-    <div class = "content1">
-        {{Content1}}
-    </div>
-
-    <div class = "content2">
-        {{Content2}}
-    </div>
-
-    <div class = "content3">
-        {{Content3}}
-    </div>
-
-    <div class = "content4">
-       {{Content4}}
-    </div>
-
-    <div class = "content5">
-        {{Content5}}
-    </div>
-
-    <div class = "content6">
-       {{Content6}}
-    </div>
-  </div>
+<body class="slide">
+<div class="grid-container">
+    <div class="content1">{{Content1}}</div>
+    <div class="content2">{{Content2}}</div>
+    <div class="content3">{{Content3}}</div>
+    <div class="content4">{{Content4}}</div>
+    <div class="content5">{{Content5}}</div>
+    <div class="content6">{{Content6}}</div>
+</div>
 </body>
 </html>

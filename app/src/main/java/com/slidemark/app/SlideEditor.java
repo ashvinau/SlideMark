@@ -19,6 +19,7 @@ public class SlideEditor implements ControllerInterface {
     private static String content;
     private static CodeArea editor;
     private File currentFile = null;
+    private String workingDir = ".";
 
     public SlideEditor(ControllerInterface newC) {
         if (newC != null)
@@ -72,6 +73,8 @@ public class SlideEditor implements ControllerInterface {
         chooser.setTitle("Select File to Load");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Documents", "*.txt", "*.md"));
         currentFile = chooser.showOpenDialog(null);
+        workingDir = currentFile.getParentFile().getAbsolutePath();
+        System.out.println("Working dir established: " + workingDir);
         if (currentFile == null)
             return false;
 
@@ -129,6 +132,8 @@ public class SlideEditor implements ControllerInterface {
             return false;
 
         currentFile = chosen;
+        workingDir = currentFile.getParentFile().getAbsolutePath();
+        System.out.println("Working dir established: " + workingDir);
         return writeCurrentFile();
     }
 
@@ -161,6 +166,8 @@ public class SlideEditor implements ControllerInterface {
                 editor.moveTo(editor.getText().length());
                 update();
                 break;
+            case "GET_WORKING_DIRECTORY":
+                return new ReturnObject<>(workingDir);
             default:
                 return null;
         }

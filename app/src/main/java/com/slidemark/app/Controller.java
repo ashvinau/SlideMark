@@ -86,6 +86,8 @@ public class Controller implements ControllerInterface {
                 return renderer.request(this, "SET_CUR_SLIDE" );
             case "WHAT_SLIDE":
                 return renderer.request(this, "WHAT_SLIDE");
+            case "GET_WORKING_DIRECTORY":
+                return editor.request(this, "GET_WORKING_DIRECTORY");
         }
         return null;
     }
