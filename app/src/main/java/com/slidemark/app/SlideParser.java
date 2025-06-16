@@ -181,7 +181,7 @@ public class SlideParser implements ControllerInterface {
                     String alt = imgM.group(1);
                     String src = imgM.group(2);
                     returnComponent.setTag("img");
-                    returnComponent.setParams("src = \"" + workingDirectory + "/" + src + "\" alt = \"" + alt + "\"");
+                    returnComponent.setParams("src = \"" + "Users\\Terra\\Documents\\TryHere\\SlideMark" + "\\" + src + "\" alt = \"" + alt + "\"");
                     data = "";
                 }
                 break;
@@ -340,9 +340,11 @@ public class SlideParser implements ControllerInterface {
                 if (curLine.isEmpty())
                     continue;
                 String[] lineComponents = getLineToken(curLine);
-                lineComponents[1] = subParse(lineComponents[1]); // Handles inline symbols
+//                lineComponents[1] = subParse(lineComponents[1]); // Handles inline symbols
                 TagComponent curToken = processToken(lineComponents[0],lineComponents[1]);
+                curToken.setContent(subParse(curToken.getContent()));
                 tagObjects.add(curToken);
+
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
