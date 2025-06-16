@@ -57,7 +57,7 @@ public class TagComponent {
     }
 
     public String toString() {
-        return "LayoutComponent- Tag: " + tag + " Params: " + params + " Content: " + content;
+        return "LayoutComponent- Tag: " + tag + " Params: " + params + " Content: " + content + "\n";
     }
 
     public boolean getVisible() {

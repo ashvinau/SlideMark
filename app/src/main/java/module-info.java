@@ -6,6 +6,7 @@ module com.slidemark.app {
     requires java.desktop;
     requires org.fxmisc.flowless;
     requires javafx.web;
+    requires java.sql;
 
 
     opens com.slidemark.app to javafx.fxml;

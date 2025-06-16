@@ -1,29 +1,21 @@
 package com.slidemark.app;
 
-import javafx.animation.PauseTransition;
+
 import javafx.application.Platform;
-import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Duration;
 
-import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
@@ -48,7 +40,7 @@ public class SlideRenderer implements ControllerInterface {
             Pattern.compile("\\{\\{Content(\\d+)\\}\\}");
     double zoomFactor = 0;
     private int currCaroIndex;
-    private Map<Integer, WritableImage> slideThumbnails = new HashMap<>();
+    String workDir = "";
 
     private List<String> templates = Arrays.asList(
             "templates/double-horizontal.html",
@@ -70,12 +62,10 @@ public class SlideRenderer implements ControllerInterface {
 
     public SlideRenderer(ControllerInterface c) {
         this.c = c;
-
     }
 
     public void setLayout(List<TagComponent> tagComponents) {
         this.list = tagComponents;
-
         updateSlideView(); // Render the slide whenever the layout changes
     }
 
@@ -84,6 +74,7 @@ public class SlideRenderer implements ControllerInterface {
     }
 
     public List<TagComponent> getags() {
+
         return this.list;
     }
 
@@ -147,6 +138,7 @@ public class SlideRenderer implements ControllerInterface {
         System.out.println("Last element: " + list.get(list.size() - 1));
         if (list != null && !list.isEmpty()) {
             for (TagComponent comp : list) {
+
                 if ("sectChange".equals(comp.getTag())) {
                     builders.add(new StringBuilder());
                 } else if (comp.getVisible()) {
@@ -157,15 +149,10 @@ public class SlideRenderer implements ControllerInterface {
                         sb.append(" ").append(comp.getParams().trim());
                     }
                     sb.append(">");
-                    if (comp.getTag().equals("pre") || // All the tags we don't want to cap off
-                            comp.getTag().equals("/pre") ||
-                            comp.getTag().equals("nextSlide") ||
-                            comp.getTag().equals("sectChange") ||
-                            comp.getTag().equals("ul") ||
-                            comp.getTag().equals("/ul") ||
-                            comp.getTag().equals("ol") ||
-                            comp.getTag().equals("/ol")
-                    ) {
+                    List<String> doNotCap = Arrays.asList("pre", "/pre", "nextSlide", "sectChange", "ul",
+                            "/ul", "ol", "/ol", "table", "/table", "img");
+                    // These tags will be manually capped by the parser
+                    if (doNotCap.contains(comp.getTag())) {
                         continue;
                     } else {
                         sb.append(comp.getContent())
@@ -204,27 +191,6 @@ public class SlideRenderer implements ControllerInterface {
         System.out.println("zoom factor: " + zoomFactor);
         c.request(this, "SET_SLIDE_NUMS");
 
-        engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-            if (newState == Worker.State.SUCCEEDED) {
-                PauseTransition pause = new PauseTransition(Duration.millis(150));
-                pause.setOnFinished(e -> {
-                    SnapshotParameters params = new SnapshotParameters();
-                    params.setFill(javafx.scene.paint.Color.TRANSPARENT);
-                    WritableImage snapshot = slideContent.snapshot(params, null);
-
-                    if (snapshot.getWidth() > 0 && snapshot.getHeight() > 0) {
-                        slideThumbnails.put(curSlideIndex, snapshot);
-                        System.out.println("Snapshot stored/updated for slide #" + curSlideIndex);
-
-                        updateCarousel();
-                    } else {
-                        System.out.println("Snapshot empty for slide #" + curSlideIndex + ", retrying...");
-                    }
-                });
-                pause.play();
-            }
-        });
-
         //System.out.println(finalHtml);
     }
 
@@ -236,7 +202,7 @@ public class SlideRenderer implements ControllerInterface {
     private void updateCarousel() {
         slideCarousel.getChildren().clear();
 
-        int maxThumbnails = 4;
+        /*int maxThumbnails = 4;
         List<Integer> keys = new ArrayList<>(slideThumbnails.keySet());
         Collections.sort(keys);
 
@@ -263,11 +229,8 @@ public class SlideRenderer implements ControllerInterface {
                 placeholder.setStyle("-fx-border-color: gray; -fx-alignment: center;");
                 slideCarousel.getChildren().add(placeholder);
             }
-        }
+        }*/
     }
-
-
-
 
     public void nextSlide(){
         curSlideIndex++;
@@ -279,9 +242,7 @@ public class SlideRenderer implements ControllerInterface {
         curSlideIndex--;
         c.request(this, "SET_SLIDE_NUM");
         c.request(this, "PROCESS_SOURCE");
-
     }
-
 
     private void startPresentation() {
         Stage present = new Stage();
