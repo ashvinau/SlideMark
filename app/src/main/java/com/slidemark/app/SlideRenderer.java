@@ -124,7 +124,9 @@ public class SlideRenderer implements ControllerInterface {
     }
 
     public void updateSlideView() {
-        System.out.println("updateSlideView() called. List is " + (list == null ? "null" : ("size " + list.size())));
+       if(list.isEmpty()){
+           return;
+       }
         currTemplate = getTemplate();
         String templateHtml = loadTemplate(currTemplate);
         if (templateHtml == null) {
