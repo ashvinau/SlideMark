@@ -4,15 +4,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.MenuBar;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.*;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
-import java.awt.*;
 import java.util.Objects;
 
 import static javafx.application.Application.launch;
@@ -21,7 +21,6 @@ public class GUI implements ControllerInterface {
     ControllerInterface c;
 
     private final BorderPane parent = new BorderPane();
-    private static String content;
     private MenuBar menuBar = MenuBarSet.createMenuBar();
     private VBox editorPane = new VBox();
     private VBox slidesPane = new VBox();
@@ -61,7 +60,7 @@ public class GUI implements ControllerInterface {
 
 
 
-   protected void renderUI() {
+    protected void renderUI() {
 
         editorData = c.request(this, "GET_SLIDE_EDITOR");
         if (editorData == null) {
@@ -98,6 +97,7 @@ public class GUI implements ControllerInterface {
         }
 
         VBox topSection = new VBox(menu, toolbar);
+        VBox.setVgrow(toolbar, Priority.NEVER);
         parent.setTop(topSection);
 
         //Takes the editorpane and slidespane and divides them among one another in order to seperate the components using a splitpane
@@ -127,13 +127,18 @@ public class GUI implements ControllerInterface {
 
     }
 
-    // Create a toolbar with filename field and lock toggle
+    // Create a toolbar with filename field and logo
     public HBox createToolBar() {
         HBox fileToolbar = new HBox();
         fileToolbar.setPadding(new Insets(5, 10, 5, 10));
         fileToolbar.setSpacing(10);
         fileToolbar.setAlignment(Pos.CENTER_LEFT);
-        fileToolbar.getStyleClass().add("toolbar"); // <-- This line is crucial for CSS targeting
+        fileToolbar.getStyleClass().add("toolbar");
+
+        fileToolbar.setMinHeight(Region.USE_PREF_SIZE);
+        fileToolbar.setPrefHeight(60);
+        fileToolbar.setMaxHeight(Region.USE_PREF_SIZE);
+
         String fileName = "Untitled";
         fileNameField = new TextField(fileName);
         fileNameField.setPrefWidth(300);
@@ -141,12 +146,22 @@ public class GUI implements ControllerInterface {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        ToggleButton lockButton = new ToggleButton("Lock Editing");
-        lockButton.setOnAction(e -> toggleEditing(lockButton));
+        // Logo image
+        Image logo = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/slidemarklogo.png")));
+        ImageView logoView = new ImageView(logo);
+        logoView.setFitWidth(50);
+        logoView.setPreserveRatio(true);
+        logoView.setSmooth(true);
+        logoView.setPickOnBounds(false); // Prevent image from being clipped
+        BorderPane logoContainer = new BorderPane(logoView);
 
-        fileToolbar.getChildren().addAll(fileNameField, spacer, lockButton);
+        fileToolbar.getChildren().addAll(fileNameField, spacer, logoContainer);
+
         return fileToolbar;
     }
+
+
+
 
     private static void toggleEditing(ToggleButton button) {
         editingLocked = !editingLocked;
