@@ -1,5 +1,6 @@
 package com.slidemark.app;
 
+import java.io.File;
 import java.util.*;
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -16,7 +17,7 @@ public class SlideParser implements ControllerInterface {
     int curSlide = 1;
     int ULlistDepth = 0;
     int OLlistDepth = 0;
-    String workingDirectory = ".";
+    private File workingDirectory = null;
     private static final Pattern UL_ITEM = Pattern.compile("^(\\t*)-");
     private static final Pattern OL_ITEM = Pattern.compile("^(\\t*)(\\d+)\\.");
     private static final Pattern LINK_TOKEN = Pattern.compile("\\[(.*?)\\]\\s*\\(([^)]+)\\)");
@@ -63,6 +64,10 @@ public class SlideParser implements ControllerInterface {
                     break;
                 case "===":
                     firstWord = "===";
+                    remainder = "";
+                    break;
+                case "---":
+                    firstWord = "---";
                     remainder = "";
                     break;
                 default:
@@ -148,6 +153,9 @@ public class SlideParser implements ControllerInterface {
         }
 
         switch (curToken) {
+            case "---":
+                returnComponent.setTag("hr");
+                break;
             case "==-":
                 returnComponent.setTag("table");
                 break;
@@ -181,7 +189,9 @@ public class SlideParser implements ControllerInterface {
                     String alt = imgM.group(1);
                     String src = imgM.group(2);
                     returnComponent.setTag("img");
-                    returnComponent.setParams("src = \"" + "Users\\Terra\\Documents\\TryHere\\SlideMark" + "\\" + src + "\" alt = \"" + alt + "\"");
+                    File imageFile = new File(workingDirectory, src);
+                    String imageURI = imageFile.toURI().toString();
+                    returnComponent.setParams("src = \"" + imageURI + "\" alt = \"" + alt + "\"");
                     data = "";
                 }
                 break;
@@ -331,7 +341,7 @@ public class SlideParser implements ControllerInterface {
         adjustOLDepth(0);
         System.out.println("Initial table reset");
         tableOpen = false;
-        workingDirectory = (String) c.request(this, "GET_WORKING_DIRECTORY").getValue();
+        workingDirectory = (File) c.request(this, "GET_WORKING_DIRECTORY").getValue();
         //System.out.println(sourceText);
         tagObjects.clear();
         try (BufferedReader input = new BufferedReader(new StringReader(sourceText))) {
