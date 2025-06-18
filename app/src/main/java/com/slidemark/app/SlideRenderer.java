@@ -152,7 +152,7 @@ public class SlideRenderer implements ControllerInterface {
                     }
                     sb.append(">");
                     List<String> doNotCap = Arrays.asList("pre", "/pre", "nextSlide", "sectChange", "ul",
-                            "/ul", "ol", "/ol", "table", "/table", "img");
+                            "/ul", "ol", "/ol", "table", "/table", "img", "hr");
                     // These tags will be manually capped by the parser
                     if (doNotCap.contains(comp.getTag())) {
                         continue;

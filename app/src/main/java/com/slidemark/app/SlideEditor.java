@@ -19,7 +19,7 @@ public class SlideEditor implements ControllerInterface {
     private static String content;
     private static CodeArea editor;
     private File currentFile = null;
-    private String workingDir = ".";
+    private File workingDir = null;
 
     public SlideEditor(ControllerInterface newC) {
         if (newC != null)
@@ -75,7 +75,8 @@ public class SlideEditor implements ControllerInterface {
         currentFile = chooser.showOpenDialog(null);
         if (currentFile == null)
             return false;
-        workingDir = currentFile.getParentFile().getAbsolutePath();
+
+        workingDir = currentFile.getParentFile();
         System.out.println("Working dir established: " + workingDir);
 
 
@@ -133,7 +134,7 @@ public class SlideEditor implements ControllerInterface {
             return false;
 
         currentFile = chosen;
-        workingDir = currentFile.getParentFile().getAbsolutePath();
+        workingDir = currentFile.getParentFile();
         System.out.println("Working dir established: " + workingDir);
         return writeCurrentFile();
     }
