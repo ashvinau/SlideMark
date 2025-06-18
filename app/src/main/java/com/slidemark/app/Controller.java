@@ -69,7 +69,10 @@ public class Controller implements ControllerInterface {
                 return parser.request(this, "SET_SLIDE_NUM");
             case "PROCESS_SOURCE":
                 return parser.request(this, "PROCESS_SOURCE");
-
+            case "GET_ALL_SLIDES":
+                return parser.request(this,"GET_ALL_SLIDES");
+            case "NEW_SLIDE":
+                return editor.request(this, "EDITOR_INSERT_DELIMITER");
         }
 
         return null;

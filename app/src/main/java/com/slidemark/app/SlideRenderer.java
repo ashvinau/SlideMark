@@ -2,11 +2,15 @@ package com.slidemark.app;
 
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebEngine;
@@ -26,11 +30,9 @@ public class SlideRenderer implements ControllerInterface {
     private ControllerInterface c;
     private static VBox renderViewContain = new VBox();
     private static WebView slideContent = new WebView();
-
     private static WebEngine engine = slideContent.getEngine();
     private static HBox slideCarousel = new HBox();
     private static StackPane slideBox;
-
     private List<TagComponent> list;
     private String finalHtml;
     private String currTemplate;
@@ -39,8 +41,8 @@ public class SlideRenderer implements ControllerInterface {
     private static final Pattern CONTENT_PLACEHOLDER =
             Pattern.compile("\\{\\{Content(\\d+)\\}\\}");
     double zoomFactor = 0;
-    private int currCaroIndex;
-    String workDir = "";
+    List<String> slideHtmlList = new ArrayList<>();
+    private List<List<TagComponent>> allSlides = new ArrayList<>();
 
     private List<String> templates = Arrays.asList(
             "templates/double-vertical.html",
@@ -66,17 +68,13 @@ public class SlideRenderer implements ControllerInterface {
 
     public void setLayout(List<TagComponent> tagComponents) {
         this.list = tagComponents;
-        updateSlideView(); // Render the slide whenever the layout changes
+        updateSlideView();
+        updateCarousel();
     }
 
-    public void setCurrentTemplateByName(String templateName) {
-        this.currTemplate = templateName;
-    }
 
-    public List<TagComponent> getags() {
 
-        return this.list;
-    }
+    // LIVEVIEW FUNCTIONS
 
     public String getTemplate() {
         String path = "templates/";
@@ -108,7 +106,6 @@ public class SlideRenderer implements ControllerInterface {
             }
             currNumSect = 0;
             htmlText = new String(is.readAllBytes(), StandardCharsets.UTF_8);;
-            // Identify how many content areas are in the file
             Matcher m = CONTENT_PLACEHOLDER.matcher(htmlText);
             while (m.find())
                 currNumSect++;
@@ -124,9 +121,9 @@ public class SlideRenderer implements ControllerInterface {
     }
 
     public void updateSlideView() {
-       if(list.isEmpty()){
-           return;
-       }
+        if(list.isEmpty()){
+            return;
+        }
         currTemplate = getTemplate();
         String templateHtml = loadTemplate(currTemplate);
         if (templateHtml == null) {
@@ -169,8 +166,8 @@ public class SlideRenderer implements ControllerInterface {
             builders.set(0, new StringBuilder("<p>No content to display.</p>"));
         }
 
-        System.out.println("# Sections processed: " + builders.size());
-        System.out.println("Num of sections for current template: " + currNumSect);
+//        System.out.println("# Sections processed: " + builders.size());
+//        System.out.println("Num of sections for current template: " + currNumSect);
 
         finalHtml = templateHtml;
 
@@ -186,61 +183,168 @@ public class SlideRenderer implements ControllerInterface {
             finalHtml = finalHtml.replace(placeholder, content);
         }
         //Sets the current information to Parser and sets the current slide # to parser
-
         engine.loadContent(finalHtml);
         zoomFactor = renderViewContain.widthProperty().getValue() / 1920;
         slideContent.setZoom(zoomFactor);
         System.out.println("zoom factor: " + zoomFactor);
         c.request(this, "SET_SLIDE_NUMS");
 
+        if (curSlideIndex - 1 < slideHtmlList.size()) {
+            slideHtmlList.set(curSlideIndex - 1, finalHtml);
+        } else {
+            slideHtmlList.add(finalHtml);
+        }
+
         //System.out.println(finalHtml);
     }
 
-    public void addSlide() {
 
+    // THUMBNAIL CAROUSEL FUNCTIONS
+    private void updateCarousel() {
+        Platform.runLater(() -> {
+            slideCarousel.getChildren().clear();
+            allSlides = (List<List<TagComponent>>) c.request(this, "GET_ALL_SLIDES").getValue();
+            slideHtmlList.clear();
+            Set<String> seenHtmls = new HashSet<>();
+
+            //Sorts through the HTML list to prevent duplicates
+            for (List<TagComponent> slideComponents : allSlides) {
+                String html = generateHtml(slideComponents);
+                if (seenHtmls.add(html)) {
+                    slideHtmlList.add(html);
+                } else {
+                    System.out.println("Duplicate slide skipped.");
+                }
+            }
+
+            int totalSlides = slideHtmlList.size();
+            curSlideIndex = Math.max(1, Math.min(curSlideIndex, totalSlides));
+            int start = Math.max(0, Math.min(curSlideIndex - 2, Math.max(0, totalSlides - 4)));
+            int end = Math.min(start + 4, totalSlides);
+
+            List<StackPane> thumbnailNodes = new ArrayList<>();
+
+            for (int i = start; i < end; i++) {
+                final int finalIndex = i + 1;
+                final String html = slideHtmlList.get(i);
+
+                WebView thumb = new WebView();
+                thumb.setPrefSize(160, 90);
+                thumb.setZoom(0.08);
+
+                StackPane wrapper = new StackPane();
+                wrapper.getStyleClass().add("thumbnail-wrapper");
+
+                if (finalIndex == curSlideIndex) {
+                    wrapper.getStyleClass().add("current-slide");
+                }
+
+                Label label = new Label(String.valueOf(finalIndex));
+                label.getStyleClass().add("thumbnail-label");
+                StackPane.setAlignment(label, Pos.TOP_LEFT);
+
+                wrapper.getChildren().addAll(thumb, label);
+                wrapper.setOnMouseClicked(e -> {
+                    if (finalIndex <= slideHtmlList.size()) {
+                        curSlideIndex = finalIndex;
+                        c.request(this, "SET_SLIDE_NUM");
+                        c.request(this, "PROCESS_SOURCE");
+                        updateCarousel();
+                    } else {
+                        System.out.println("Thumbnail index out of bounds: ");
+                    }
+                });
+
+                thumb.getEngine().loadContent(html);
+                thumbnailNodes.add(wrapper);
+            }
+
+            slideCarousel.getChildren().addAll(thumbnailNodes);
+        });
     }
 
+    // This method is JUST for the carousel's live view.
+    private String generateHtml(List<TagComponent> components) {
+        String templateHtml = loadTemplate(getTemplateFromComponents(components));
+        if (templateHtml == null) return "<html><body><h2>Template not found.</h2></body></html>";
 
-    private void updateCarousel() {
-        slideCarousel.getChildren().clear();
+        List<StringBuilder> builders = new ArrayList<>();
+        builders.add(new StringBuilder());
 
-        /*int maxThumbnails = 4;
-        List<Integer> keys = new ArrayList<>(slideThumbnails.keySet());
-        Collections.sort(keys);
-
-        int startKeyIndex = 0;
-        for (int i = 0; i < keys.size(); i++) {
-            if (keys.get(i) >= Math.max(1, curSlideIndex - 1)) {
-                startKeyIndex = i;
-                break;
+        for (TagComponent comp : components) {
+            if ("sectChange".equals(comp.getTag())) {
+                builders.add(new StringBuilder());
+            } else if (comp.getVisible()) {
+                StringBuilder sb = builders.get(builders.size() - 1);
+                sb.append("<").append(comp.getTag());
+                if (comp.getParams() != null && !comp.getParams().isBlank()) {
+                    sb.append(" ").append(comp.getParams().trim());
+                }
+                sb.append(">");
+                List<String> doNotCap = Arrays.asList("pre", "/pre", "nextSlide", "sectChange", "ul",
+                        "/ul", "ol", "/ol", "table", "/table", "img", "hr");
+                if (!doNotCap.contains(comp.getTag())) {
+                    sb.append(comp.getContent()).append("</").append(comp.getTag()).append(">");
+                }
             }
         }
-        for (int i = startKeyIndex; i < Math.min(startKeyIndex + maxThumbnails, keys.size()); i++) {
-            int slideNum = keys.get(i);
-            WritableImage snapshot = slideThumbnails.get(slideNum);
 
-            if (snapshot != null) {
-                ImageView thumbnail = new ImageView(snapshot);
-                thumbnail.setFitWidth(200);
-                thumbnail.setFitHeight(120);
-                thumbnail.setPreserveRatio(true);
-                slideCarousel.getChildren().add(thumbnail);
-            } else {
-                Label placeholder = new Label("Slide " + slideNum);
-                placeholder.setPrefSize(200, 120);
-                placeholder.setStyle("-fx-border-color: gray; -fx-alignment: center;");
-                slideCarousel.getChildren().add(placeholder);
-            }
-        }*/
+        for (int i = 1; i <= currNumSect; i++) {
+            String placeholder = "{{Content" + i + "}}";
+            String content = (i - 1 < builders.size()) ? builders.get(i - 1).toString() : "<p>(Empty Section)</p>";
+            templateHtml = templateHtml.replace(placeholder, content);
+        }
+
+        return templateHtml;
     }
 
-    public void nextSlide(){
+    private String getTemplateFromComponents(List<TagComponent> components) {
+        String path = "templates/";
+        String extension = ".html";
+        String def = path + "single-center" + extension;
+
+        if (components != null && !components.isEmpty()) {
+            String filename = components.get(components.size() - 1).getContent();
+            filename = path + filename + extension;
+
+            if (templates.contains(filename)) {
+                return filename;
+            }
+        }
+        return def;
+    }
+
+
+
+
+    // BUTTON FUNCTIONS
+
+    public void addSlide() {
+        c.request(this, "NEW_SLIDE");
+        updateCarousel();
+    }
+
+    public void nextSlide() {
+        int totalSlides = slideHtmlList.size();
+        //If the next slide would be greater than the total amount of slide return nothing and do not go next.
+        if (curSlideIndex >= totalSlides) {
+            return;
+        }
+
         curSlideIndex++;
         c.request(this, "SET_SLIDE_NUM");
         c.request(this, "PROCESS_SOURCE");
     }
 
-    public void prevSlide(){
+
+
+
+    public void prevSlide() {
+        //If the previous slide starts at index -1 return nothing.
+        if (curSlideIndex <= 1) {
+            return;
+        }
+
         curSlideIndex--;
         c.request(this, "SET_SLIDE_NUM");
         c.request(this, "PROCESS_SOURCE");
@@ -293,22 +397,19 @@ public class SlideRenderer implements ControllerInterface {
                     break;
             }
         });
-        //SnapshotParameters params = new SnapshotParameters();
-
-
-
     }
 
 
+    // RENDERER PANEL
     public VBox create() {
-        // Outer container
+        //MAIN CONTAINER
         renderViewContain.getStyleClass().add("render-view-contain");
         renderViewContain.setAlignment(Pos.TOP_CENTER);
 
         Label renderCap = new Label("Slide View");
         renderCap.getStyleClass().add("render-cap");
 
-        // Main slide WebView
+        // LIVE VIEW SET UP
         slideContent.setContextMenuEnabled(false);
         slideContent.getStyleClass().add("slide-webview");
 
@@ -319,15 +420,10 @@ public class SlideRenderer implements ControllerInterface {
         slideBox = new StackPane(slideContentWrapper);
         slideBox.getStyleClass().add("slide-box");
 
-        // Responsive sizing
         slideContent.prefWidthProperty().bind(renderViewContain.widthProperty());
         slideContent.prefHeightProperty().bind(renderViewContain.widthProperty().multiply(0.56));
         slideContent.maxWidthProperty().bind(renderViewContain.widthProperty());
         slideContent.maxHeightProperty().bind(renderViewContain.widthProperty().multiply(0.56));
-
-        zoomFactor = renderViewContain.widthProperty().getValue() / 1920;
-        slideContent.setZoom(zoomFactor);
-
         slideContentWrapper.prefWidthProperty().bind(renderViewContain.widthProperty());
         slideContentWrapper.prefHeightProperty().bind(renderViewContain.widthProperty().multiply(0.56));
 
@@ -335,11 +431,10 @@ public class SlideRenderer implements ControllerInterface {
         clip.widthProperty().bind(slideContentWrapper.widthProperty());
         clip.heightProperty().bind(slideContentWrapper.heightProperty());
         slideContentWrapper.setClip(clip);
-
         slideBox.prefWidthProperty().bind(renderViewContain.widthProperty());
         slideBox.prefHeightProperty().bind(renderViewContain.widthProperty().multiply(0.56));
 
-        // Slide carousel (initialized but populated later)
+        // CAROUSEL SET UP
         slideCarousel = new HBox();
         slideCarousel.getStyleClass().add("slide-carousel");
         slideCarousel.setSpacing(10);
@@ -349,44 +444,63 @@ public class SlideRenderer implements ControllerInterface {
         carouselScroll.setPrefHeight(100);
         carouselScroll.getStyleClass().add("carousel-scroll");
 
-        // Buttons
-        Button presentButton = new Button("Presentation Mode");
+        Button prevArrow = new Button("←");
+        prevArrow.getStyleClass().add("carousel-arrow");
+        prevArrow.setOnAction(e -> prevSlide());
+
+        Button nextArrow = new Button("→");
+        nextArrow.getStyleClass().add("carousel-arrow");
+        nextArrow.setOnAction(e -> nextSlide());
+
+        HBox carouselWrapper = new HBox(10, prevArrow, carouselScroll, nextArrow);
+        carouselWrapper.setAlignment(Pos.CENTER);
+        carouselWrapper.setStyle("-fx-padding: 5;");
+
+        // BUTTON SET UP
+        Image projectorIcon = new Image(getClass().getResourceAsStream("/icons/projector.png"));
+        ImageView projectorIconView = new ImageView(projectorIcon);
+        projectorIconView.setFitWidth(30);
+        projectorIconView.setFitHeight(30);
+
+        Button presentButton = new Button("", projectorIconView);
         presentButton.getStyleClass().add("present-button");
         presentButton.setOnAction(e -> startPresentation());
+        presentButton.setTooltip(new Tooltip("Presentation Mode"));
 
-        Button addSlideButton = new Button("Add Slide");
+
+        Button addSlideButton = new Button("+");
         addSlideButton.getStyleClass().add("add-slide-button");
         addSlideButton.setOnAction(e -> addSlide());
+        addSlideButton.setTooltip(new Tooltip("Add Slide"));
 
-        Button nextSlideButton = new Button("Next");
-        nextSlideButton.getStyleClass().add("next-slide-button");
-        nextSlideButton.setOnAction(e -> nextSlide());
+        HBox leftBox = new HBox(presentButton);
+        leftBox.setAlignment(Pos.BOTTOM_LEFT);
+        HBox rightBox = new HBox(addSlideButton);
+        rightBox.setAlignment(Pos.BOTTOM_RIGHT);
 
-        Button prevSlideButton = new Button("Prev");
-        prevSlideButton.getStyleClass().add("prev-slide-button");
-        prevSlideButton.setOnAction(e -> prevSlide());
-
-        HBox buttonBox = new HBox(presentButton, addSlideButton, nextSlideButton, prevSlideButton);
-        buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
+        HBox buttonBox = new HBox(leftBox, new Region(), rightBox);
+        HBox.setHgrow(buttonBox.getChildren().get(1), Priority.ALWAYS);
         buttonBox.getStyleClass().add("button-box");
+        buttonBox.setSpacing(10);
+        buttonBox.setPadding(new Insets(10));
 
-        VBox mainContent = new VBox(10, slideBox, carouselScroll);
+        // PANEL INITIATED
+        VBox mainContent = new VBox(10, slideBox, carouselWrapper);
         mainContent.setAlignment(Pos.TOP_CENTER);
-
         renderViewContain.getChildren().setAll(renderCap, mainContent, buttonBox);
-
-        Platform.runLater(this::updateCarousel);
-
+        updateCarousel();
         return renderViewContain;
     }
 
 
+    // CONTROLLER REQUESTS
     @Override
     public ReturnObject<?> request(ControllerInterface sender, String message) {
         switch (message) {
             case "GET_SLIDE_RENDERER":
                 return new ReturnObject<>(create());
             case "LAYOUT_READY":
+                // Get current/active slide only
                 setLayout((List<TagComponent>) c.request(this, "GET_LAYOUT").getValue());
             case "WHAT_SLIDE":
                 return new ReturnObject<>(curSlideIndex);
