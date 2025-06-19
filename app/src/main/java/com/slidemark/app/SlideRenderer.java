@@ -43,12 +43,13 @@ public class SlideRenderer implements ControllerInterface {
     private static final Pattern CONTENT_PLACEHOLDER =
             Pattern.compile("\\{\\{Content(\\d+)\\}\\}");
     double zoomFactor = 0;
-    private boolean isCarouselReady = false;
-
+    private boolean carouselPopulated = false;
+    private int maxSlides;
     List<String> slideHtmlList = new ArrayList<>();
     private List<List<TagComponent>> allSlides = new ArrayList<>();
     private int carouselStartIndex = 0;
     private final int windowSize = 4;
+    private List<WebView> thumbRefs = new ArrayList<>();
 
 
     private List<String> templates = Arrays.asList(
@@ -196,36 +197,54 @@ public class SlideRenderer implements ControllerInterface {
         System.out.println("zoom factor: " + zoomFactor);
         c.request(this, "SET_SLIDE_NUMS");
 
-       isCarouselReady = false;
-       updateCarousel();
+        updateCarousel();
 
         //System.out.println(finalHtml);
+    }
+
+    private int getTotalSlides(){
+        int totalSlides = (int) c.request(this, "GET_TOTAL_SLIDES").getValue();
+        return totalSlides;
+    }
+
+    private List<List<TagComponent>> getAllSlides(int totalSlides) {
+        int oldIndex = curSlideIndex;
+        List<List<TagComponent>> returnLists = new ArrayList<>();
+        for (int curSlide = 1; curSlide <= totalSlides; curSlide++) {
+            curSlideIndex = curSlide;
+            c.request(this, "SET_SLIDE_NUM");
+            returnLists.add((List<TagComponent>) c.request(this, "GET_LAYOUT").getValue());
+        }
+        curSlideIndex = oldIndex;
+        return returnLists;
     }
 
 
     // THUMBNAIL CAROUSEL FUNCTIONS
     public void updateCarousel() {
-        if (isCarouselReady) return;
+        int currMax = maxSlides;        ;
+        if (getTotalSlides() != currMax) {
+            carouselPopulated = false;
+        }
 
+        if (carouselPopulated)
+            return;
+        else {
+            carouselPopulated = true;
+            thumbRefs.clear();
+        }
+
+
+        maxSlides = getTotalSlides();
         slideCarousel.getChildren().clear();
         slideHtmlList.clear();
 
-        int maxSlides = 100;
-        int emptySlideStreak = 0;
-        int maxEmptyAllowed = 1;
-
-        for (int i = 1; i <= maxSlides; i++) {
+        allSlides = getAllSlides(maxSlides);
+        int i = 0;
+        for (List<TagComponent> slide : allSlides) {
+            i++;
             curSlideIndex = i;
-            c.request(this, "SET_SLIDE_NUM");
-            List<TagComponent> layout = (List<TagComponent>) c.request(this, "GET_LAYOUT").getValue();
-
-            if (layout == null || layout.isEmpty()) {
-                emptySlideStreak++;
-                if (emptySlideStreak >= maxEmptyAllowed) break;
-                else continue;
-            }
-
-            emptySlideStreak = 0;
+            List<TagComponent> layout = slide;
             this.list = layout;
 
             String template = getTemplate();
@@ -243,6 +262,7 @@ public class SlideRenderer implements ControllerInterface {
             StackPane wrapper = new StackPane(thumb);
             wrapper.getStyleClass().add("thumbnail-wrapper");
 
+            thumbRefs.add(thumb);
             // controls the mouse clicks on thumbnail.
             final int slideNumber = i;
             wrapper.setOnMouseClicked(e -> {
@@ -257,12 +277,13 @@ public class SlideRenderer implements ControllerInterface {
             wrapper.getChildren().add(label);
 
             slideCarousel.getChildren().add(wrapper);
+
         }
 
         curSlideIndex = 1;
         c.request(this, "SET_SLIDE_NUM");
 
-        isCarouselReady = true;
+
     }
 
 
@@ -308,17 +329,17 @@ public class SlideRenderer implements ControllerInterface {
     }
 
 
-
+    private void updatePreview() {}
     // BUTTON FUNCTIONS
 
-    public void addSlide() {
+    void addSlide() {
         c.request(this, "NEW_SLIDE");
-        updateCarousel();
     }
 
     public void nextSlide() {
         if (curSlideIndex < slideHtmlList.size()) {
             curSlideIndex++;
+            thumbRefs.get(curSlideIndex).getEngine().loadContent(finalHtml);
             c.request(this, "SET_SLIDE_NUM");
             c.request(this, "PROCESS_SOURCE");
         }
@@ -329,6 +350,7 @@ public class SlideRenderer implements ControllerInterface {
     public void prevSlide() {
         if (curSlideIndex > 1) {
             curSlideIndex--;
+            thumbRefs.get(curSlideIndex).getEngine().loadContent(finalHtml);
             c.request(this, "SET_SLIDE_NUM");
             c.request(this, "PROCESS_SOURCE");
         }

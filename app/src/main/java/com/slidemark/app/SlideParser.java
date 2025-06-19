@@ -406,6 +406,8 @@ public class SlideParser implements ControllerInterface {
                 curSlide = (int) c.request(this, "WHAT_SLIDE").getValue();
                 System.out.println("current slide assigned: " + curSlide);
                 break;
+            case "GET_TOTAL_SLIDES":
+                return new ReturnObject<>(splitOnDelimiter(returnList, "nextSlide").size());
         }
         return null; // No return data here.
     }

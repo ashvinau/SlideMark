@@ -73,6 +73,8 @@ public class Controller implements ControllerInterface {
                 return parser.request(this,"GET_ALL_SLIDES");
             case "NEW_SLIDE":
                 return editor.request(this, "EDITOR_INSERT_DELIMITER");
+            case "GET_TOTAL_SLIDES":
+                return parser.request(this,"GET_TOTAL_SLIDES");
         }
 
         return null;
