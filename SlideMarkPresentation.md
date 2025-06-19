@@ -145,3 +145,8 @@ Alpha 0.1 Available **Now!**
 # Any Questions?
 ###### **Email us:** slidemark@scholomance.io
 === single-left
+###### Hi This is a new slide!
+This is a **paragraph text**
+![] (headersmall.png)
+=== single-left
+Hello 

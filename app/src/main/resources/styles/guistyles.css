@@ -296,3 +296,16 @@ VBox, HBox, SplitPane {
 }
 
 
+.scroll-bar:horizontal {
+    -fx-background-color: #202020;
+    -fx-pref-height: 8px;
+}
+
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #606060;
+    -fx-background-radius: 4px;
+}
+
+.scroll-bar:horizontal:hover .thumb {
+    -fx-background-color: #a11d28;
+}

@@ -406,10 +406,6 @@ public class SlideParser implements ControllerInterface {
                 curSlide = (int) c.request(this, "WHAT_SLIDE").getValue();
                 System.out.println("current slide assigned: " + curSlide);
                 break;
-                // This message is only for the carousel so it does not cause an infinite loop.
-            case "GET_ALL_SLIDES":
-                List<List<TagComponent>> allSlides = splitOnDelimiter(returnList, "nextSlide");
-                return new ReturnObject<>(allSlides);
         }
         return null; // No return data here.
     }
